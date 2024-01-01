@@ -20,7 +20,6 @@
   "connectivity": [
     "lan"
   ],
-  "brandColor": "#000000",
   "images": {
     "small": "{{driverAssetsPath}}/images/small.png",
     "large": "{{driverAssetsPath}}/images/large.png",

@@ -22,11 +22,20 @@
     "large": "/assets/images/large.png",
     "xlarge": "/assets/images/xlarge.png"
   },
-  "author": {
-    "name": "Wim Haanstra",
-    "email": "wim@x256.nl"
-  },
   "brandColor": "#FF0000",
+  "tags": {
+    "en": [
+      "intergas",
+      "incomfort"
+    ]
+  },
+  "author": {
+    "email": "wim@sortedbits.com",
+    "name": "Wim Haanstra"
+  },
+  "bugs": {
+    "url": "https://github.com/sorted-bits/intergas-homey/issues"
+  },
   "drivers": [
     {
       "name": {

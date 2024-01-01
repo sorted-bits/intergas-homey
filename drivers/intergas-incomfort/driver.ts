@@ -44,8 +44,6 @@ class IncomfortDriver extends Homey.Driver {
     await session.done();
 
     session.setHandler("list_devices", async () => {
-      console.log(`Devices found`, this.heaters);
-
       return this.heaters.map((heater, index) => {
         return {
           name: `Intergas Incomfort (${heater})`,
