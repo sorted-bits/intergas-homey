@@ -1,0 +1,237 @@
+{
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.sortedbits.incomfort",
+  "version": "1.0.0",
+  "compatibility": ">=5.0.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "Intergas Incomfort"
+  },
+  "description": {
+    "en": "Adds support for Intergas Incomfort thermostats"
+  },
+  "category": [
+    "climate"
+  ],
+  "permissions": [],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Wim Haanstra",
+    "email": "wim@x256.nl"
+  },
+  "brandColor": "#FF0000",
+  "drivers": [
+    {
+      "name": {
+        "en": "Intergas Incomfort"
+      },
+      "class": "heater",
+      "capabilities": [
+        "target_temperature",
+        "measure_temperature",
+        "is_pumping",
+        "is_tapping",
+        "is_burning",
+        "is_failing",
+        "measure_water_pressure",
+        "measure_cv_water_temperature",
+        "measure_tap_water_temperature"
+      ],
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
+      "brandColor": "#000000",
+      "images": {
+        "small": "/drivers/intergas-incomfort/assets/images/small.png",
+        "large": "/drivers/intergas-incomfort/assets/images/large.png",
+        "xlarge": "/drivers/intergas-incomfort/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "pair"
+        },
+        {
+          "id": "loading",
+          "template": "loading"
+        },
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "id": "intergas-incomfort",
+      "settings": [
+        {
+          "id": "host",
+          "type": "text",
+          "label": {
+            "en": "Host"
+          },
+          "value": "192.168.1.100",
+          "hint": {
+            "en": "The IP/hostname of the Incomfort Gateway",
+            "nl": "Het IP of hostname van de Incomfort Gateway"
+          }
+        },
+        {
+          "id": "username",
+          "type": "text",
+          "label": {
+            "en": "Username",
+            "nl": "Gebruikersnaam"
+          },
+          "value": "admin",
+          "hint": {
+            "en": "The username to access the Incomfort Gateway",
+            "nl": "De gebruikersnaam om toegang te krijgen tot de Incomfort Gateway"
+          }
+        },
+        {
+          "id": "password",
+          "type": "password",
+          "label": {
+            "en": "Password",
+            "nl": "Wachtwoord"
+          },
+          "value": "somevalue",
+          "hint": {
+            "en": "The password to access the Incomfort Gateway",
+            "nl": "Het wachtwoord om toegang te krijgen tot de Incomfort Gateway"
+          }
+        },
+        {
+          "id": "updateInterval",
+          "type": "text",
+          "label": {
+            "en": "Update interval",
+            "nl": "Update interval"
+          },
+          "value": "10",
+          "hint": {
+            "en": "Time in seconds used to query the Incomfort Gateway",
+            "nl": "Tijd in seconden om de Incomfort Gateway aan te roepen"
+          }
+        }
+      ]
+    }
+  ],
+  "capabilities": {
+    "is_burning": {
+      "type": "boolean",
+      "title": {
+        "en": "Is burning",
+        "nl": "Brander aan"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "icon": "/assets/capabilities/flame.svg"
+    },
+    "is_failing": {
+      "type": "boolean",
+      "title": {
+        "en": "Is failing",
+        "nl": "Foutmelding"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "icon": "/assets/capabilities/error.svg"
+    },
+    "is_pumping": {
+      "type": "boolean",
+      "title": {
+        "en": "Is pumping",
+        "nl": "Pomp draait"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "icon": "/assets/capabilities/pump.svg"
+    },
+    "is_tapping": {
+      "type": "boolean",
+      "title": {
+        "en": "Is tapping",
+        "nl": "Wordt getapt"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "icon": "/assets/capabilities/faucet.svg"
+    },
+    "measure_cv_water_temperature": {
+      "type": "number",
+      "title": {
+        "en": "CV Water Temperature",
+        "nl": "CV Water Temperatuur"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": true,
+      "units": {
+        "en": "°C"
+      },
+      "decimals": 2,
+      "insights": true,
+      "icon": "/assets/capabilities/temperature.svg"
+    },
+    "measure_tap_water_temperature": {
+      "type": "number",
+      "title": {
+        "en": "Tap water temperature",
+        "nl": "Tap water temperatuur"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": true,
+      "units": {
+        "en": "°C"
+      },
+      "decimals": 2,
+      "insights": true,
+      "icon": "/assets/capabilities/temperature.svg"
+    },
+    "measure_water_pressure": {
+      "type": "number",
+      "title": {
+        "en": "Water pressure",
+        "nl": "Water druk"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": true,
+      "units": {
+        "en": "bar",
+        "nl": "bar"
+      },
+      "decimals": 2,
+      "insights": true,
+      "icon": "/assets/capabilities/water.svg"
+    }
+  }
+}

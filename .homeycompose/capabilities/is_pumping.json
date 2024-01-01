@@ -1,0 +1,14 @@
+ 
+{
+    "type": "boolean",
+    "title": { 
+      "en": "Is pumping", 
+      "nl": "Pomp draait"
+    },
+    "getable": true,
+    "setable": false,
+    "uiComponent": "sensor",
+    "insights": true,
+    "icon": "/assets/capabilities/pump.svg"
+
+  }

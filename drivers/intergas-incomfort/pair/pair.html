@@ -1,0 +1,49 @@
+<script type="application/javascript">
+    function submitForm() {
+
+        var button = document.getElementById('submit-button');
+        button.classList.add('is-loading');
+
+        var host = document.getElementById('host').value;
+        var username = document.getElementById('username').value;
+        var password = document.getElementById('password').value;
+
+        var data = {
+            username: username,
+            password: password,
+            host: host,
+        };
+
+        Homey.emit("form_complete", data).then(function (result) {
+            button.classList.remove('is-loading');
+
+            if (result.success !== true) {
+                Homey.alert(`Failed to connect, please check the form: ${JSON.stringify(result.message)}`);
+            }
+        });
+    }
+</script>
+
+<form class="homey-form">
+    <fieldset class="homey-form-fieldset">
+        <legend class="homey-form-legend" data-i18n="login.title"></legend>
+
+        <div class="homey-form-group">
+            <label class="homey-form-label" for="host" data-i18n="login.gateway"></label>
+            <input class="homey-form-input" id="host" type="text" value="" />
+        </div>
+
+        <div class="homey-form-group">
+            <label class="homey-form-label" for="username" data-i18n="login.username"></label>
+            <input class="homey-form-input" id="username" type="text" value="" />
+        </div>
+        <div class="homey-form-group">
+            <label class="homey-form-label" for="password" data-i18n="login.password"></label>
+            <input class="homey-form-input" id="password" type="password" value="" />
+        </div>
+    </fieldset>
+
+    <button id="submit-button" type="button" onclick="submitForm()" class="homey-button-primary-full" data-i18n="login.submit">
+    </button>
+</form>
+

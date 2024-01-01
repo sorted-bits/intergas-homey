@@ -1,0 +1,32 @@
+{
+  "id": "com.sortedbits.incomfort",
+  "version": "1.0.0",
+  "compatibility": ">=5.0.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "Intergas Incomfort"
+  },
+  "description": {
+    "en": "Adds support for Intergas Incomfort thermostats"
+  },
+  "category": [
+    "climate"
+  ],
+  "permissions": [],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "brandColor": "#FF0000",
+  "tags": { "en" : ["intergas", "incomfort" ]},
+  "author": {
+    "email": "wim@sortedbits.com",
+    "name": "Wim Haanstra"
+  },
+  "bugs": {
+  }
+}

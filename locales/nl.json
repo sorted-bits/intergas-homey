@@ -1,0 +1,9 @@
+{
+    "login": {
+        "title": "Gateway login",
+        "gateway": "Gateway host",
+        "username": "Gebruikersnaam",
+        "password": "Wachtwoord",
+        "submit": "Versturen"
+    }
+}

@@ -1,0 +1,49 @@
+{
+  "name": {
+    "en": "Intergas Incomfort"
+  },
+  "class": "heater",
+  "capabilities": [
+    "target_temperature",
+    "measure_temperature",
+    "is_pumping",
+    "is_tapping",
+    "is_burning",
+    "is_failing",
+    "measure_water_pressure",
+    "measure_cv_water_temperature",
+    "measure_tap_water_temperature"
+  ],
+  "platforms": [
+    "local"
+  ],
+  "connectivity": [
+    "lan"
+  ],
+  "brandColor": "#000000",
+  "images": {
+    "small": "{{driverAssetsPath}}/images/small.png",
+    "large": "{{driverAssetsPath}}/images/large.png",
+    "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
+  },
+  "pair": [
+    {
+      "id": "pair"
+    },
+    {
+      "id": "loading",
+      "template": "loading"
+    },
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation":  {
+        "next": "add_devices"
+      }
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ]
+}

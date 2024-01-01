@@ -1,0 +1,53 @@
+[
+    {
+        "id": "host",
+        "type": "text",
+        "label": {
+            "en": "Host"
+        },
+        "value": "192.168.1.100",
+        "hint": {
+            "en": "The IP/hostname of the Incomfort Gateway",
+            "nl": "Het IP of hostname van de Incomfort Gateway"
+        }
+    },
+    {
+        "id": "username",
+        "type": "text",
+        "label": {
+            "en": "Username",
+            "nl": "Gebruikersnaam"
+        },
+        "value": "admin",
+        "hint": {
+            "en": "The username to access the Incomfort Gateway",
+            "nl": "De gebruikersnaam om toegang te krijgen tot de Incomfort Gateway"
+        }
+    },
+    {
+        "id": "password",
+        "type": "password",
+        "label": {
+            "en": "Password",
+            "nl": "Wachtwoord"
+        },
+        "value": "somevalue",
+        "hint": {
+            "en": "The password to access the Incomfort Gateway",
+            "nl": "Het wachtwoord om toegang te krijgen tot de Incomfort Gateway"
+        }
+    },
+    {
+        "id": "updateInterval",
+        "type": "text",
+        "label": {
+            "en": "Update interval",
+            "nl": "Update interval"
+        },
+        "value": "10",
+        "hint": {
+            "en": "Time in seconds used to query the Incomfort Gateway",
+            "nl": "Tijd in seconden om de Incomfort Gateway aan te roepen"
+        }
+    }    
+]

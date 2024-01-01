@@ -1,0 +1,18 @@
+ 
+{
+    "type": "number",
+    "title": { 
+        "en": "Tap water temperature",
+        "nl": "Tap water temperatuur"
+    },
+    "getable": true,
+    "setable": false,
+    "uiComponent": "sensor",
+    "uiQuickAction": true,
+    "units": {
+        "en": "°C"
+    },
+    "decimals": 2,
+    "insights": true,
+    "icon": "/assets/capabilities/temperature.svg"
+  }
