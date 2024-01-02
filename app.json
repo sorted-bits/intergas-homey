@@ -59,7 +59,6 @@
       "connectivity": [
         "lan"
       ],
-      "brandColor": "#000000",
       "images": {
         "small": "/drivers/intergas-incomfort/assets/images/small.png",
         "large": "/drivers/intergas-incomfort/assets/images/large.png",
