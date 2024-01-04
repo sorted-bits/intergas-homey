@@ -1,0 +1,22 @@
+{
+    "triggers": [
+        {
+            "id": "boiler_starts_pumping",
+            "title": {
+                "en": "Boiler starts pumping"
+            },
+            "hint": {
+                "en": "When the boiler starts pumping"
+            }
+        },
+        {
+            "id": "boiler_stops_pumping",
+            "title": {
+                "en": "Boiler stops pumping"
+            },
+            "hint": {
+                "en": "When the boiler stops pumping"
+            }
+        }
+    ]
+}

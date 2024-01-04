@@ -54,6 +54,8 @@ class IntergasIncomfort extends Homey.Device {
   _room: number = 0;
   _stop: boolean = false;
 
+  _boilerIsPumping = false;
+
   homeyApp(): IntergasIncomfortApp {
     return this.homey.app as IntergasIncomfortApp;
   }
@@ -132,10 +134,23 @@ class IntergasIncomfort extends Homey.Device {
 
 
     const io = response['IO'];
+
+    const boilerIsPumping = this._ioToBool(io, BITMASK_PUMP);
+
     this.setCapabilityValue('is_tapping', this._ioToBool(io, BITMASK_TAP));
     this.setCapabilityValue('is_burning', this._ioToBool(io, BITMASK_BURNER));
-    this.setCapabilityValue('is_pumping', this._ioToBool(io, BITMASK_PUMP));
+    this.setCapabilityValue('is_pumping', boilerIsPumping);
     this.setCapabilityValue('is_failing', this._ioToBool(io, BITMASK_FAIL));
+
+    if (!this._boilerIsPumping && boilerIsPumping) {
+      const trigger = this.homey.flow.getDeviceTriggerCard('boiler_starts_pumping');
+      await trigger.trigger(this);
+    } else if (this._boilerIsPumping && !boilerIsPumping) {
+      const trigger = this.homey.flow.getDeviceTriggerCard('boiler_stops_pumping');
+      await trigger.trigger(this);
+    }
+
+    this._boilerIsPumping = boilerIsPumping;
 
     if (!this._stop) { // Stop repeating the query, 
       setTimeout(() => {
