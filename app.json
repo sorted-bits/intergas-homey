@@ -69,6 +69,38 @@
             "filter": "driver_id=intergas-incomfort"
           }
         ]
+      },
+      {
+        "id": "boiler_starts_burning",
+        "title": {
+          "en": "Boiler starts burning"
+        },
+        "hint": {
+          "en": "When the boiler starts burning"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=intergas-incomfort"
+          }
+        ]
+      },
+      {
+        "id": "boiler_stops_burning",
+        "title": {
+          "en": "Boiler stops burning"
+        },
+        "hint": {
+          "en": "When the boiler stops burning"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=intergas-incomfort"
+          }
+        ]
       }
     ]
   },
