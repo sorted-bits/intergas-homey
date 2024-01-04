@@ -94,63 +94,66 @@ class IntergasIncomfort extends Homey.Device {
     }
 
     var data = this.getData();
-
     var url = `data.json?heater=${data['index']}`;
-    const response = await this.homeyApp().fetch(host, url, username, password);
+    
+    try {
+      let response = await this.homeyApp().fetch(host, url, username, password);
 
-    if (!this._isSettingRoomTemp) {
-      if (this._room1OverrideTemperature === 0) {
-        this._dataToNumber('room_temp_set_1', 'target_temperature', response);
-      } else {
-        // Check if the current override temperature is still the same
-        const override = this.value(`room_set_ovr_1`, response);
-        const targetTemperature = this.value('room_temp_set_1', response);
+      this._dataToNumber('room_temp_1', 'measure_temperature', response);
+      this._dataToNumber('ch_pressure', 'measure_water_pressure', response);
+      this._dataToNumber('ch_temp', 'measure_cv_water_temperature', response);
+      this._dataToNumber('tap_temp', 'measure_tap_water_temperature', response);
+  
+      const io = response['IO'];
+  
+      const boilerIsPumping = this._ioToBool(io, BITMASK_PUMP);
+  
+      this.setCapabilityValue('is_tapping', this._ioToBool(io, BITMASK_TAP));
+      this.setCapabilityValue('is_burning', this._ioToBool(io, BITMASK_BURNER));
+      this.setCapabilityValue('is_pumping', boilerIsPumping);
+      this.setCapabilityValue('is_failing', this._ioToBool(io, BITMASK_FAIL));
+  
+      if (!this._boilerIsPumping && boilerIsPumping) {
+        const trigger = this.homey.flow.getDeviceTriggerCard('boiler_starts_pumping');
+        await trigger.trigger(this);
+      } else if (this._boilerIsPumping && !boilerIsPumping) {
+        const trigger = this.homey.flow.getDeviceTriggerCard('boiler_stops_pumping');
+        await trigger.trigger(this);
+      }
+  
+      this._boilerIsPumping = boilerIsPumping;
 
-        if (override && override !== this._room1OverrideTemperature) { // the override temperature has changed, maybe through a different app/device
-
-          this.log(`Override temperature has changed by someone else to`, override);
-
-          this._room1OverrideTemperature = override;
-        }
-
-        if (targetTemperature === this._room1OverrideTemperature) { // targetTemperature has caught up, we can use that now
-          this._room1OverrideTemperature = 0;
+      if (!this._isSettingRoomTemp) {
+        if (this._room1OverrideTemperature === 0) {
           this._dataToNumber('room_temp_set_1', 'target_temperature', response);
-
-          this.log(`Target temperature has caught up, using that`, targetTemperature);
         } else {
-          // Override temperature has not yet been set onto target_temperature, we better use this
-          this._dataToNumber('room_set_ovr_1', 'target_temperature', response);
-
-          this.log(`Target temperature is lagging behind, using override`, override);
+          // Check if the current override temperature is still the same
+          const override = this.value(`room_set_ovr_1`, response);
+          const targetTemperature = this.value('room_temp_set_1', response);
+  
+          if (override && override !== this._room1OverrideTemperature) { // the override temperature has changed, maybe through a different app/device
+  
+            this.log(`Override temperature has changed by someone else to`, override);
+  
+            this._room1OverrideTemperature = override;
+          }
+  
+          if (targetTemperature === this._room1OverrideTemperature) { // targetTemperature has caught up, we can use that now
+            this._room1OverrideTemperature = 0;
+            this._dataToNumber('room_temp_set_1', 'target_temperature', response);
+  
+            this.log(`Target temperature has caught up, using that`, targetTemperature);
+          } else {
+            // Override temperature has not yet been set onto target_temperature, we better use this
+            this._dataToNumber('room_set_ovr_1', 'target_temperature', response);
+  
+            this.log(`Target temperature is lagging behind, using override`, override);
+          }
         }
       }
+    } catch (error) {
+      this.error('Failed to update status', error);
     }
-
-    this._dataToNumber('room_temp_1', 'measure_temperature', response);
-    this._dataToNumber('ch_pressure', 'measure_water_pressure', response);
-    this._dataToNumber('ch_temp', 'measure_cv_water_temperature', response);
-    this._dataToNumber('tap_temp', 'measure_tap_water_temperature', response);
-
-
-    const io = response['IO'];
-
-    const boilerIsPumping = this._ioToBool(io, BITMASK_PUMP);
-
-    this.setCapabilityValue('is_tapping', this._ioToBool(io, BITMASK_TAP));
-    this.setCapabilityValue('is_burning', this._ioToBool(io, BITMASK_BURNER));
-    this.setCapabilityValue('is_pumping', boilerIsPumping);
-    this.setCapabilityValue('is_failing', this._ioToBool(io, BITMASK_FAIL));
-
-    if (!this._boilerIsPumping && boilerIsPumping) {
-      const trigger = this.homey.flow.getDeviceTriggerCard('boiler_starts_pumping');
-      await trigger.trigger(this);
-    } else if (this._boilerIsPumping && !boilerIsPumping) {
-      const trigger = this.homey.flow.getDeviceTriggerCard('boiler_stops_pumping');
-      await trigger.trigger(this);
-    }
-
-    this._boilerIsPumping = boilerIsPumping;
 
     if (!this._stop) { // Stop repeating the query, 
       setTimeout(() => {

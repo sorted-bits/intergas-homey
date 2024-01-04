@@ -21,8 +21,6 @@ class IncomfortDriver extends Homey.Driver {
   }
 
   async onPairListDevices() {
-    console.log(`Devices found`, this.heaters);
-
     return this.heaters.map((heater, index) => {
       return {
         name: `Intergas Incomfort (${heater})`,

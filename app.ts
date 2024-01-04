@@ -16,8 +16,6 @@ export class IntergasIncomfortApp extends Homey.App {
       }
     : {};
       
-    console.log(auth);
-
     const url = username ? `http://${host}/protect/${path}` : `http://${host}/${path}`;
 
     this.log('Connecting to ', url)
