@@ -1,6 +1,6 @@
 {
   "id": "com.sortedbits.incomfort",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "compatibility": ">=5.0.0",
   "sdk": 3,
   "platforms": [
@@ -22,7 +22,12 @@
     "xlarge": "/assets/images/xlarge.png"
   },
   "brandColor": "#FF0000",
-  "tags": { "en" : ["intergas", "incomfort" ]},
+  "tags": {
+    "en": [
+      "intergas",
+      "incomfort"
+    ]
+  },
   "author": {
     "email": "wim@sortedbits.com",
     "name": "Wim Haanstra"
