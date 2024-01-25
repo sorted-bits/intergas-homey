@@ -4,5 +4,8 @@
   },
   "1.0.1": {
     "en": "Add correct assets"
+  },
+  "1.0.2": {
+    "en": "Fixed an issue with the updateInterval, added support for displ_code"
   }
 }
