@@ -101,6 +101,23 @@
             "filter": "driver_id=intergas-incomfort"
           }
         ]
+      },
+      {
+        "id": "display_code_changed",
+        "title": {
+          "en": "Display code changed",
+          "nl": "Status code veranderd"
+        },
+        "hint": {
+          "en": "When the display code has changed"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=intergas-incomfort"
+          }
+        ]
       }
     ]
   },
@@ -119,7 +136,9 @@
         "is_failing",
         "measure_water_pressure",
         "measure_cv_water_temperature",
-        "measure_tap_water_temperature"
+        "measure_tap_water_temperature",
+        "display_code",
+        "display_text"
       ],
       "platforms": [
         "local"
@@ -209,6 +228,34 @@
     }
   ],
   "capabilities": {
+    "display_code": {
+      "type": "number",
+      "title": {
+        "en": "Display code",
+        "nl": "Status code"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": true,
+      "decimals": 2,
+      "insights": true,
+      "icon": "/assets/capabilities/info.svg"
+    },
+    "display_text": {
+      "type": "string",
+      "title": {
+        "en": "Display text",
+        "nl": "Status text"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": true,
+      "decimals": 2,
+      "insights": true,
+      "icon": "/assets/capabilities/info.svg"
+    },
     "is_burning": {
       "type": "boolean",
       "title": {

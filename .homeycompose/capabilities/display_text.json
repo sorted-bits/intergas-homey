@@ -1,0 +1,15 @@
+ 
+{
+    "type": "string",
+    "title": { 
+        "en": "Display text",
+        "nl": "Status text"
+    },
+    "getable": true,
+    "setable": false,
+    "uiComponent": "sensor",
+    "uiQuickAction": true,
+    "decimals": 2,
+    "insights": true,
+    "icon": "/assets/capabilities/info.svg"
+  }

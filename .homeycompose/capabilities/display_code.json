@@ -1,0 +1,15 @@
+ 
+{
+    "type": "number",
+    "title": { 
+        "en": "Display code",
+        "nl": "Status code"
+    },
+    "getable": true,
+    "setable": false,
+    "uiComponent": "sensor",
+    "uiQuickAction": true,
+    "decimals": 2,
+    "insights": true,
+    "icon": "/assets/capabilities/info.svg"
+  }

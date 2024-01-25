@@ -35,6 +35,16 @@
             "hint": {
                 "en": "When the boiler stops burning"
             }
+        },
+        {
+            "id": "display_code_changed",
+            "title": {
+                "en": "Display code changed",
+                "nl": "Status code veranderd"
+            },
+            "hint": {
+                "en": "When the display code has changed"
+            }
         }
     ]
 }

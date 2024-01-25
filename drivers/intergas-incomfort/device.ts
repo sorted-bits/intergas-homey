@@ -24,6 +24,27 @@ class IntergasIncomfort extends Homey.Device {
     return this.homey.app as IntergasIncomfortApp;
   }
 
+  _displayCodeToText(code: number): string {
+    const displayCodes: { [id: number]: string} = {
+      0:'opentherm',
+      15:'boiler ext.',
+      24:'frost',
+      37:'central heating rf',
+      51:'tapwater int.',
+      85:'sensortest',
+      102:'central heating',
+      126:'standby',
+      153:'postrun boiler',
+      170:'service',
+      204:'tapwater',
+      231:'postrun ch',
+      240:'boiler int.',
+      255:'buffer',
+    }
+
+    return displayCodes[code] ?? 'Unknown';
+  }
+
   _convert(mostSignificantByte: number, leastSignificantByte: number): number {
     return (mostSignificantByte * 256 + leastSignificantByte) / 100;
   }
@@ -33,11 +54,15 @@ class IntergasIncomfort extends Homey.Device {
     return Boolean(result);
   }
 
-  _dataToNumber(name: string, capability: string, data: any) {
+  async _dataToNumber(name: string, capability: string, data: any) {
     const value = this.value(name, data);
     if (value) {
       this.log(`Setting ${capability} to ${value}`);
-      this.setCapabilityValue(capability, value);
+      try {
+        await this.setCapabilityValue(capability, value);
+      } catch (ex) {
+        this.error(ex);
+      }
     }
   }
 
@@ -47,25 +72,43 @@ class IntergasIncomfort extends Homey.Device {
     return result;
   }
 
-  async capabilityChange(capability: string, newValue: boolean, startTrigger?: string, stopTrigger?: string) {
+  async booleanChange(capability: string, newValue: boolean, startTrigger?: string, stopTrigger?: string) {
     const trigger = (newValue) ? startTrigger : stopTrigger;
 
-    if (newValue !== this.getCapabilityValue(capability) && trigger) {
-      const card = this.homey.flow.getDeviceTriggerCard(trigger);
-      await card.trigger(this);
-    }
-
-    this.setCapabilityValue(capability, newValue);
+    this.capabilityChange(capability, newValue, trigger);
   }
+
+  async capabilityChange(capability: string, value: any, trigger?: string) {
+    try {
+      if (value !== this.getCapabilityValue(capability) && trigger) {
+        const card = this.homey.flow.getDeviceTriggerCard(trigger);
+        await card.trigger(this);
+      }
+
+      await this.setCapabilityValue(capability, value);
+    } catch (ex) {
+      this.error(ex);
+    }
+  }  
 
   async updateStatus() {
     var host = this.getSetting("host");
     var username = this.getSetting("username");
     var password = this.getSetting("password");
-    var updateInterval = this.getSetting('updateInterval') ?? 10;
 
-    if (updateInterval < MIN_QUERY_INTERVAL) {
-      updateInterval = MIN_QUERY_INTERVAL;
+    var updateInterval = String(this.getSetting('updateInterval') ?? '10');
+
+    try {
+      const numberInterval = Number(updateInterval);
+      if (numberInterval) {
+        if (numberInterval < MIN_QUERY_INTERVAL) {
+          updateInterval = String(MIN_QUERY_INTERVAL);
+        }
+      } else {
+        updateInterval = String(MIN_QUERY_INTERVAL)
+      }
+    } catch (ex) {
+      this.error(ex);
     }
 
     var data = this.getData();
@@ -74,6 +117,11 @@ class IntergasIncomfort extends Homey.Device {
     try {
       let response = await this.homeyApp().fetch(host, url, username, password);
 
+      const display_code = response['displ_code'];
+
+      this.capabilityChange('display_code', display_code, 'display_code_changed');
+      this.capabilityChange('display_text', this._displayCodeToText(display_code));
+
       this._dataToNumber('room_temp_1', 'measure_temperature', response);
       this._dataToNumber('ch_pressure', 'measure_water_pressure', response);
       this._dataToNumber('ch_temp', 'measure_cv_water_temperature', response);
@@ -81,10 +129,10 @@ class IntergasIncomfort extends Homey.Device {
   
       const io = response['IO'];
   
-      this.capabilityChange('is_pumping', this._ioToBool(io, BITMASK_PUMP), "boiler_starts_pumping", "boiler_stops_pumping");
-      this.capabilityChange('is_tapping', this._ioToBool(io, BITMASK_TAP));
-      this.capabilityChange('is_burning', this._ioToBool(io, BITMASK_BURNER), "boiler_starts_burning", "boiler_stops_burning");
-      this.capabilityChange('is_failing', this._ioToBool(io, BITMASK_FAIL));
+      this.booleanChange('is_pumping', this._ioToBool(io, BITMASK_PUMP), "boiler_starts_pumping", "boiler_stops_pumping");
+      this.booleanChange('is_tapping', this._ioToBool(io, BITMASK_TAP));
+      this.booleanChange('is_burning', this._ioToBool(io, BITMASK_BURNER), "boiler_starts_burning", "boiler_stops_burning");
+      this.booleanChange('is_failing', this._ioToBool(io, BITMASK_FAIL));
   
       if (!this._isSettingRoomTemp) {
         if (this._room1OverrideTemperature === 0) {
@@ -121,7 +169,7 @@ class IntergasIncomfort extends Homey.Device {
     if (!this._stop) { // Stop repeating the query, 
       setTimeout(() => {
         this.updateStatus()
-      }, updateInterval * 1000);
+      }, Number(updateInterval) * 1000);
     }
   }
 

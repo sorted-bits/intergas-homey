@@ -12,7 +12,9 @@
     "is_failing",
     "measure_water_pressure",
     "measure_cv_water_temperature",
-    "measure_tap_water_temperature"
+    "measure_tap_water_temperature",
+    "display_code",
+    "display_text"
   ],
   "platforms": [
     "local"
