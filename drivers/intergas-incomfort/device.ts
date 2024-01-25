@@ -202,6 +202,15 @@ class IntergasIncomfort extends Homey.Device {
   async onInit() {
     this.log('Intergas Incomfort device has been initialized');
 
+    // Check if all capabilities are available
+    if (this.hasCapability('display_code') === false) {
+      await this.addCapability('display_code');
+    }
+
+    if (this.hasCapability('display_text') === false) {
+      await this.addCapability('display_text');
+    }
+
     this.registerCapabilityListener("target_temperature", async (value) => {
       this.log('Changing room target temperature to', value);
       this._isSettingRoomTemp = true;
