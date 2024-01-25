@@ -13,5 +13,8 @@
   },
   "1.0.4": {
     "en": "Fix #2 for an invalid settings type"
+  },
+  "1.0.5": {
+    "en": "Optimize calls for data, update settings to use a number instead of a text"
   }
 }
