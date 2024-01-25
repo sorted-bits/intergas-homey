@@ -1,6 +1,6 @@
 import Homey from 'homey';
 import { PairSession } from 'homey/lib/Driver';
-import { IntergasIncomfortApp } from '../../app';
+import { fetch } from './api';
 
 class IncomfortDriver extends Homey.Driver {
 
@@ -8,10 +8,6 @@ class IncomfortDriver extends Homey.Driver {
   username: string = '';
   password: string = '';
   heaters: string[] = [];
-
-  homeyApp(): IntergasIncomfortApp {
-    return this.homey.app as IntergasIncomfortApp;
-  }
 
   /**
    * onInit is called when the driver is initialized.
@@ -31,7 +27,7 @@ class IncomfortDriver extends Homey.Driver {
         host: this.host,
         username: this.username,
         password: this.password,
-        updateInterval: '10',
+        refreshInterval: 10,
       }
     };
   }
@@ -54,7 +50,9 @@ class IncomfortDriver extends Homey.Driver {
     session.setHandler("form_complete", async (data) => {
       if (data.host) {
         try {
-          await this.homeyApp().fetch(data.host, 'heaterlist.json', data.username, data.password);
+          
+          const response = await fetch(data.host, 'heaterlist.json', data.username, data.password);
+          const heaters = (response.heaterlist as string[]).filter(h => h != null);
           
           this.host = data.host;
           this.username = data.username;
@@ -63,6 +61,7 @@ class IncomfortDriver extends Homey.Driver {
           session.nextView();
           return {
             success: true,
+            heaters: heaters,
           }
         } catch (error) {
           return {
@@ -76,7 +75,7 @@ class IncomfortDriver extends Homey.Driver {
     session.setHandler('showView', async (view) => {
       if (view === 'loading') {
         try {
-          const response = await this.homeyApp().fetch(this.host, 'heaterlist.json', this.username, this.password);
+          const response = await fetch(this.host, 'heaterlist.json', this.username, this.password);
           const heaters = (response.heaterlist as string[]).filter(h => h != null);
           this.heaters = heaters ?? [];
           session.nextView();

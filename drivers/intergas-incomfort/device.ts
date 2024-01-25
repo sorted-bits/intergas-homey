@@ -1,5 +1,5 @@
 import Homey from 'homey';
-import { IntergasIncomfortApp } from '../../app';
+import { fetch } from './api';
 
 const INVALID_VALUE = (2 ** 15 - 1) / 100.0
 
@@ -19,12 +19,10 @@ class IntergasIncomfort extends Homey.Device {
   _room1OverrideTemperature: number = 0;
   _room: number = 0;
   _stop: boolean = false;
+  heaterIndex: number = 0;
+  heaterId: string = '';
 
-  homeyApp(): IntergasIncomfortApp {
-    return this.homey.app as IntergasIncomfortApp;
-  }
-
-  _displayCodeToText(code: number): string {
+  displayCodeToText(code: number): string {
     const displayCodes: { [id: number]: string} = {
       0:'opentherm',
       15:'boiler ext.',
@@ -45,31 +43,32 @@ class IntergasIncomfort extends Homey.Device {
     return displayCodes[code] ?? 'Unknown';
   }
 
-  _convert(mostSignificantByte: number, leastSignificantByte: number): number {
-    return (mostSignificantByte * 256 + leastSignificantByte) / 100;
-  }
-
-  _ioToBool(io: number, mask: number): boolean {
+  ioToBool(io: number, mask: number): boolean {
     const result = io & mask;
     return Boolean(result);
   }
 
-  async _dataToNumber(name: string, capability: string, data: any) {
-    const value = this.value(name, data);
+  generateValueWithPrefix(prefix: string, data: any): number | undefined {
+    const convert = (mostSignificantByte: number, leastSignificantByte: number): number => {
+      return (mostSignificantByte * 256 + leastSignificantByte) / 100;
+    }
+
+    const result = convert(data[`${prefix}_msb`], data[`${prefix}_lsb`])
+    if (result === INVALID_VALUE) return undefined;
+    return result;
+  }  
+
+  async setValueWithPrefix(name: string, capability: string, data: any) {
+    const value = this.generateValueWithPrefix(name, data);
     if (value) {
-      this.log(`Setting ${capability} to ${value}`);
-      try {
-        await this.setCapabilityValue(capability, value);
-      } catch (ex) {
-        this.error(ex);
-      }
+      await this.setCapabilityValue(capability, value);
     }
   }
 
-  value(prefix: string, data: any): number | undefined {
-    const result = this._convert(data[`${prefix}_msb`], data[`${prefix}_lsb`])
-    if (result === INVALID_VALUE) return undefined;
-    return result;
+  async setRefreshInterval(interval: number) {
+    await this.setSettings({
+      refreshInterval: interval,
+    });
   }
 
   async booleanChange(capability: string, newValue: boolean, startTrigger?: string, stopTrigger?: string) {
@@ -79,16 +78,12 @@ class IntergasIncomfort extends Homey.Device {
   }
 
   async capabilityChange(capability: string, value: any, trigger?: string) {
-    try {
-      if (value !== this.getCapabilityValue(capability) && trigger) {
-        const card = this.homey.flow.getDeviceTriggerCard(trigger);
-        await card.trigger(this);
-      }
-
-      await this.setCapabilityValue(capability, value);
-    } catch (ex) {
-      this.error(ex);
+    if (value !== this.getCapabilityValue(capability) && trigger) {
+      const card = this.homey.flow.getDeviceTriggerCard(trigger);
+      await card.trigger(this);
     }
+
+    await this.setCapabilityValue(capability, value);
   }  
 
   async updateStatus() {
@@ -96,51 +91,52 @@ class IntergasIncomfort extends Homey.Device {
     var username = this.getSetting("username");
     var password = this.getSetting("password");
 
-    var updateInterval = String(this.getSetting('updateInterval') ?? '10');
+    var refreshInterval = this.getSetting('refreshInterval') ?? 10;
 
     try {
-      const numberInterval = Number(updateInterval);
+      const numberInterval = Number(refreshInterval);
       if (numberInterval) {
         if (numberInterval < MIN_QUERY_INTERVAL) {
-          updateInterval = String(MIN_QUERY_INTERVAL);
+          refreshInterval = String(MIN_QUERY_INTERVAL);
+          await this.setRefreshInterval(refreshInterval);
         }
       } else {
-        updateInterval = String(MIN_QUERY_INTERVAL)
+        refreshInterval = String(MIN_QUERY_INTERVAL)
+        await this.setRefreshInterval(refreshInterval);
       }
     } catch (ex) {
       this.error(ex);
     }
 
-    var data = this.getData();
-    var url = `data.json?heater=${data['index']}`;
+    var url = `data.json?heater=${this.heaterIndex}`;
     
     try {
-      let response = await this.homeyApp().fetch(host, url, username, password);
+      let response = await fetch(host, url, username, password);
 
       const display_code = response['displ_code'];
 
       this.capabilityChange('display_code', display_code, 'display_code_changed');
-      this.capabilityChange('display_text', this._displayCodeToText(display_code));
+      this.capabilityChange('display_text', this.displayCodeToText(display_code));
 
-      this._dataToNumber('room_temp_1', 'measure_temperature', response);
-      this._dataToNumber('ch_pressure', 'measure_water_pressure', response);
-      this._dataToNumber('ch_temp', 'measure_cv_water_temperature', response);
-      this._dataToNumber('tap_temp', 'measure_tap_water_temperature', response);
+      this.setValueWithPrefix('room_temp_1', 'measure_temperature', response);
+      this.setValueWithPrefix('ch_pressure', 'measure_water_pressure', response);
+      this.setValueWithPrefix('ch_temp', 'measure_cv_water_temperature', response);
+      this.setValueWithPrefix('tap_temp', 'measure_tap_water_temperature', response);
   
       const io = response['IO'];
   
-      this.booleanChange('is_pumping', this._ioToBool(io, BITMASK_PUMP), "boiler_starts_pumping", "boiler_stops_pumping");
-      this.booleanChange('is_tapping', this._ioToBool(io, BITMASK_TAP));
-      this.booleanChange('is_burning', this._ioToBool(io, BITMASK_BURNER), "boiler_starts_burning", "boiler_stops_burning");
-      this.booleanChange('is_failing', this._ioToBool(io, BITMASK_FAIL));
+      this.booleanChange('is_pumping', this.ioToBool(io, BITMASK_PUMP), "boiler_starts_pumping", "boiler_stops_pumping");
+      this.booleanChange('is_tapping', this.ioToBool(io, BITMASK_TAP));
+      this.booleanChange('is_burning', this.ioToBool(io, BITMASK_BURNER), "boiler_starts_burning", "boiler_stops_burning");
+      this.booleanChange('is_failing', this.ioToBool(io, BITMASK_FAIL));
   
       if (!this._isSettingRoomTemp) {
         if (this._room1OverrideTemperature === 0) {
-          this._dataToNumber('room_temp_set_1', 'target_temperature', response);
+          this.setValueWithPrefix('room_temp_set_1', 'target_temperature', response);
         } else {
           // Check if the current override temperature is still the same
-          const override = this.value(`room_set_ovr_1`, response);
-          const targetTemperature = this.value('room_temp_set_1', response);
+          const override = this.generateValueWithPrefix(`room_set_ovr_1`, response);
+          const targetTemperature = this.generateValueWithPrefix('room_temp_set_1', response);
   
           if (override && override !== this._room1OverrideTemperature) { // the override temperature has changed, maybe through a different app/device
   
@@ -151,12 +147,12 @@ class IntergasIncomfort extends Homey.Device {
   
           if (targetTemperature === this._room1OverrideTemperature) { // targetTemperature has caught up, we can use that now
             this._room1OverrideTemperature = 0;
-            this._dataToNumber('room_temp_set_1', 'target_temperature', response);
+            this.setValueWithPrefix('room_temp_set_1', 'target_temperature', response);
   
             this.log(`Target temperature has caught up, using that`, targetTemperature);
           } else {
             // Override temperature has not yet been set onto target_temperature, we better use this
-            this._dataToNumber('room_set_ovr_1', 'target_temperature', response);
+            this.setValueWithPrefix('room_set_ovr_1', 'target_temperature', response);
   
             this.log(`Target temperature is lagging behind, using override`, override);
           }
@@ -169,12 +165,12 @@ class IntergasIncomfort extends Homey.Device {
     if (!this._stop) { // Stop repeating the query, 
       setTimeout(() => {
         this.updateStatus()
-      }, Number(updateInterval) * 1000);
+      }, Number(refreshInterval) * 1000);
     }
   }
 
   async setOverride(temperature: number, room: number): Promise<void> {
-    this.log(`setting override temperature ${temperature} for room ${room}`);
+    this.log(`Setting override temperature ${temperature} for room ${room}`);
 
     if (temperature > OVERRIDE_MAX_TEMP || temperature < OVERRIDE_MIN_TEMP) {
       this.error(`We cannot set this temperature, has to be between 5 and 30 degrees`);
@@ -184,32 +180,30 @@ class IntergasIncomfort extends Homey.Device {
     this._room1OverrideTemperature = temperature;
     this._isSettingRoomTemp = true;
 
-    var data = this.getData();
     var host = this.getSetting("host");
     var username = this.getSetting("username");
     var password = this.getSetting("password");
 
-    let url = `data.json?heater=${data['index']}`
+    let url = `data.json?heater=${this.heaterIndex}`
     url += `&thermostat=${room}`
     url += `&setpoint=${(temperature - OVERRIDE_MIN_TEMP) * 10}`;
-    await this.homeyApp().fetch(host, url, username, password);
+    await fetch(host, url, username, password);
     this._isSettingRoomTemp = false;
+  }
+
+  async checkCapability(capabilityName: string) {
+    if (this.hasCapability(capabilityName) === false) {
+      await this.addCapability(capabilityName);
+    }
   }
 
   /**
    * onInit is called when the device is initialized.
    */
   async onInit() {
-    this.log('Intergas Incomfort device has been initialized');
 
-    // Check if all capabilities are available
-    if (this.hasCapability('display_code') === false) {
-      await this.addCapability('display_code');
-    }
-
-    if (this.hasCapability('display_text') === false) {
-      await this.addCapability('display_text');
-    }
+    await this.checkCapability('display_code');
+    await this.checkCapability('display_text');
 
     this.registerCapabilityListener("target_temperature", async (value) => {
       this.log('Changing room target temperature to', value);
@@ -217,6 +211,12 @@ class IntergasIncomfort extends Homey.Device {
 
       this.setOverride(value, this._room);
     })
+    
+    var data = this.getData();
+    this.heaterIndex = data['index'];
+    this.heaterId = data['id'];
+
+    this.log(`Intergas Incomfort device (${this.heaterId}:${this.heaterIndex}) has been initialized`);
 
     this.updateStatus();
   }

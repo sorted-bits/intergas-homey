@@ -38,13 +38,15 @@
         }
     },
     {
-        "id": "updateInterval",
-        "type": "text",
+        "id": "refreshInterval",
+        "type": "number",
         "label": {
             "en": "Update interval",
             "nl": "Update interval"
         },
-        "value": "10",
+        "min": 10,
+        "value": 10,
+        "max": 120,
         "hint": {
             "en": "Time in seconds used to query the Incomfort Gateway",
             "nl": "Tijd in seconden om de Incomfort Gateway aan te roepen"
