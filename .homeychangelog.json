@@ -16,5 +16,8 @@
   },
   "1.0.5": {
     "en": "Optimize calls for data, update settings to use a number instead of a text"
+  },
+  "1.1.0": {
+    "en": "Optimize code, catch more errors, fix refresh issue, fix issue when heaters didn't have logical indexes."
   }
 }
