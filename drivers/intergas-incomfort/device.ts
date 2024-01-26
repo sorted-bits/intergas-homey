@@ -1,15 +1,6 @@
 import Homey from 'homey';
-import { getStatus, setTemperature } from './api';
-import { OVERRIDE_MAX_TEMP, OVERRIDE_MIN_TEMP } from './constants';
-
-const INVALID_VALUE = (2 ** 15 - 1) / 100.0
-
-const BITMASK_FAIL = 0x01;
-const BITMASK_PUMP = 0x02;
-const BITMASK_TAP = 0x04;
-const BITMASK_BURNER = 0x08;
-
-const MIN_QUERY_INTERVAL = 10;
+import { getStatus, setTemperature } from './API/api';
+import { OVERRIDE_MAX_TEMP, OVERRIDE_MIN_TEMP, MIN_QUERY_INTERVAL } from './constants';
 
 class IntergasIncomfort extends Homey.Device {
 
@@ -20,7 +11,7 @@ class IntergasIncomfort extends Homey.Device {
   heaterIndex: number = 0;
   heaterId: string = '';
 
-  getHeaterSettings = () : { host: string, refreshInterval: number, username?: string, password?: string } => {
+  getHeaterSettings = (): { host: string, refreshInterval: number, username?: string, password?: string } => {
     const host = this.getSetting("host");
     const username = this.getSetting("username");
     const password = this.getSetting("password");
@@ -31,127 +22,86 @@ class IntergasIncomfort extends Homey.Device {
     }
 
     return {
-      host, 
-      username, 
+      host,
+      username,
       password,
       refreshInterval
     }
   }
 
-  displayCodeToText(code: number): string {
-    const displayCodes: { [id: number]: string} = {
-      0:'opentherm',
-      15:'boiler ext.',
-      24:'frost',
-      37:'central heating rf',
-      51:'tapwater int.',
-      85:'sensortest',
-      102:'central heating',
-      126:'standby',
-      153:'postrun boiler',
-      170:'service',
-      204:'tapwater',
-      231:'postrun ch',
-      240:'boiler int.',
-      255:'buffer',
+  async booleanChange(capability: string, newValue?: boolean, startTrigger?: string, stopTrigger?: string) {
+    if (newValue !== undefined) {
+      const trigger = (newValue) ? startTrigger : stopTrigger;
+      this.capabilityChange(capability, newValue, trigger);
+    } else {
+      this.error(`Trying to set an undefined value to ${capability}`)
     }
-
-    return displayCodes[code] ?? 'Unknown';
   }
 
-  ioToBool(io: number, mask: number): boolean {
-    const result = io & mask;
-    return Boolean(result);
-  }
+  async capabilityChange(capability: string, value: any | undefined, trigger?: string) {
+    if (value !== undefined) {
+      if (value !== this.getCapabilityValue(capability) && trigger) {
+        const card = this.homey.flow.getDeviceTriggerCard(trigger);
+        await card.trigger(this);
+      }
 
-  generateValueWithPrefix(prefix: string, data: any): number | undefined {
-    const convert = (mostSignificantByte: number, leastSignificantByte: number): number => {
-      return (mostSignificantByte * 256 + leastSignificantByte) / 100;
-    }
-
-    const result = convert(data[`${prefix}_msb`], data[`${prefix}_lsb`])
-    if (result === INVALID_VALUE) return undefined;
-    return result;
-  }  
-
-  async setValueWithPrefix(name: string, capability: string, data: any) {
-    const value = this.generateValueWithPrefix(name, data);
-    if (value) {
       await this.setCapabilityValue(capability, value);
+    } else {
+      this.error(`Trying to set an undefined value to ${capability}`)
     }
   }
-
-  async setRefreshInterval(interval: number) {
-    await this.setSettings({
-      refreshInterval: interval,
-    });
-  }
-
-  async booleanChange(capability: string, newValue: boolean, startTrigger?: string, stopTrigger?: string) {
-    const trigger = (newValue) ? startTrigger : stopTrigger;
-
-    this.capabilityChange(capability, newValue, trigger);
-  }
-
-  async capabilityChange(capability: string, value: any, trigger?: string) {
-    if (value !== this.getCapabilityValue(capability) && trigger) {
-      const card = this.homey.flow.getDeviceTriggerCard(trigger);
-      await card.trigger(this);
-    }
-
-    await this.setCapabilityValue(capability, value);
-  }  
 
   async updateStatus() {
     const { host, username, password, refreshInterval } = this.getHeaterSettings();
 
     try {
       let response = await getStatus(host, this.heaterIndex, username, password);
+      if (response) {
+        console.log(response);
 
-      const display_code = response['displ_code'];
+        this.capabilityChange('display_code', response.displayCode, 'display_code_changed');
+        this.capabilityChange('display_text', response.displayText);
 
-      this.capabilityChange('display_code', display_code, 'display_code_changed');
-      this.capabilityChange('display_text', this.displayCodeToText(display_code));
+        this.booleanChange('is_pumping', response.isPumping, "boiler_starts_pumping", "boiler_stops_pumping");
+        this.booleanChange('is_tapping', response.isTapping);
+        this.booleanChange('is_burning', response.isBurning, "boiler_starts_burning", "boiler_starts_burning");
+        this.booleanChange('is_failing', response.isFailing);
 
-      this.setValueWithPrefix('room_temp_1', 'measure_temperature', response);
-      this.setValueWithPrefix('ch_pressure', 'measure_water_pressure', response);
-      this.setValueWithPrefix('ch_temp', 'measure_cv_water_temperature', response);
-      this.setValueWithPrefix('tap_temp', 'measure_tap_water_temperature', response);
-  
-      const io = response['IO'];
-  
-      this.booleanChange('is_pumping', this.ioToBool(io, BITMASK_PUMP), "boiler_starts_pumping", "boiler_stops_pumping");
-      this.booleanChange('is_tapping', this.ioToBool(io, BITMASK_TAP));
-      this.booleanChange('is_burning', this.ioToBool(io, BITMASK_BURNER), "boiler_starts_burning", "boiler_stops_burning");
-      this.booleanChange('is_failing', this.ioToBool(io, BITMASK_FAIL));
-  
-      if (!this._isSettingRoomTemp) {
-        if (this._room1OverrideTemperature === 0) {
-          this.setValueWithPrefix('room_temp_set_1', 'target_temperature', response);
-        } else {
-          // Check if the current override temperature is still the same
-          const override = this.generateValueWithPrefix(`room_set_ovr_1`, response);
-          const targetTemperature = this.generateValueWithPrefix('room_temp_set_1', response);
-  
-          if (override && override !== this._room1OverrideTemperature) { // the override temperature has changed, maybe through a different app/device
-  
-            this.log(`Override temperature has changed by someone else to`, override);
-  
-            this._room1OverrideTemperature = override;
-          }
-  
-          if (targetTemperature === this._room1OverrideTemperature) { // targetTemperature has caught up, we can use that now
-            this._room1OverrideTemperature = 0;
-            this.setValueWithPrefix('room_temp_set_1', 'target_temperature', response);
-  
-            this.log(`Target temperature has caught up, using that`, targetTemperature);
+        this.capabilityChange('measure_temperature', response.room1?.temperature);
+
+        this.capabilityChange('measure_water_pressure', response.heating?.pressure);
+        this.capabilityChange('measure_cv_water_temperature', response.heating?.temperature);
+
+        this.capabilityChange('measure_tap_water_temperature', response.tap?.temperature);
+
+        if (!this._isSettingRoomTemp) {
+          if (this._room1OverrideTemperature === 0) {
+            this.capabilityChange('target_temperature', response.room1?.target)
           } else {
-            // Override temperature has not yet been set onto target_temperature, we better use this
-            this.setValueWithPrefix('room_set_ovr_1', 'target_temperature', response);
-  
-            this.log(`Target temperature is lagging behind, using override`, override);
+            // Check if the current override temperature is still the same
+            const override = response.room1?.override;
+            const targetTemperature = response.room1?.target;
+
+            if (override && override !== this._room1OverrideTemperature) { // the override temperature has changed, maybe through a different app/device
+              this.log(`Override temperature has changed by someone else to`, override);
+              this._room1OverrideTemperature = override;
+            }
+
+            if (targetTemperature === this._room1OverrideTemperature) { // targetTemperature has caught up, we can use that now
+              this._room1OverrideTemperature = 0;
+              this.capabilityChange('target_temperature', targetTemperature);
+
+              this.log(`Target temperature has caught up, using that`, targetTemperature);
+            } else {
+              // Override temperature has not yet been set onto target_temperature, we better use this
+              this.capabilityChange('target_temperature', override);
+
+              this.log(`Target temperature is lagging behind, using override`, override);
+            }
           }
         }
+      } else {
+        this.error('Status was undefined');
       }
     } catch (error) {
       this.error('Failed to update status', error);
@@ -206,7 +156,7 @@ class IntergasIncomfort extends Homey.Device {
 
       this.setOverride(value, this._room);
     })
-    
+
     var data = this.getData();
     this.heaterIndex = data['index'];
     this.heaterId = data['id'];

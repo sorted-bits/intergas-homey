@@ -1,6 +1,8 @@
 import fetch, { Headers } from 'node-fetch'
-import { OVERRIDE_MIN_TEMP } from './constants';
-import { Heater } from './heater';
+import { OVERRIDE_MIN_TEMP } from '../constants';
+import { Heater } from '../heater';
+import { IntergasResponse } from './response';
+import { parseStatus } from './parseStatus';
 
 const performCommand = async (host: string, path: string, username?: string, password?  : string): Promise<any> => {
      
@@ -19,10 +21,10 @@ const performCommand = async (host: string, path: string, username?: string, pas
     return json;
   }
 
-export const getStatus = async (host: string, heaterIndex: number, username?: string, password?: string): Promise<any> => {
+export const getStatus = async (host: string, heaterIndex: number, username?: string, password?: string): Promise<IntergasResponse | undefined> => {   
     var path = `data.json?heater=${heaterIndex}`;
     let response = await performCommand(host, path, username, password);
-    return response;
+    return parseStatus(response);
 }
 
 export const setTemperature = async (host: string, heaterIndex: number, room: number, temperature: number, username?: string, password?: string) : Promise<void> => {

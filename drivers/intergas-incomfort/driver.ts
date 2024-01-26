@@ -1,6 +1,6 @@
 import Homey from 'homey';
 import { PairSession } from 'homey/lib/Driver';
-import { getHeaterList } from './api';
+import { getHeaterList } from './API/api';
 import { Heater } from './heater';
 
 class IncomfortDriver extends Homey.Driver {
