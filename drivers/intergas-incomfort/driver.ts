@@ -1,13 +1,14 @@
 import Homey from 'homey';
 import { PairSession } from 'homey/lib/Driver';
-import { fetch } from './api';
+import { getHeaterList } from './api';
+import { Heater } from './heater';
 
 class IncomfortDriver extends Homey.Driver {
 
   host: string = '';
   username: string = '';
   password: string = '';
-  heaters: string[] = [];
+  heaters: Heater[] = [];
 
   /**
    * onInit is called when the driver is initialized.
@@ -16,12 +17,12 @@ class IncomfortDriver extends Homey.Driver {
     this.log('IncomfortDriver has been initialized');
   }
 
-  createHeaterSettings(heaterId: string, index: number): any {
+  createHeaterSettings(heater: Heater): any {
     return {
-      name: `Intergas Incomfort (${heaterId})`,
+      name: `Intergas Incomfort (${heater.id})`,
       data: {
-        id: heaterId,
-        index: index 
+        id: heater.id,
+        index: heater.index 
       },
       settings: {
         host: this.host,
@@ -33,8 +34,8 @@ class IncomfortDriver extends Homey.Driver {
   }
 
   async onPairListDevices() {
-    return this.heaters.map((heater, index) => {
-      return this.createHeaterSettings(heater, index);
+    return this.heaters.map(heater => {
+      return this.createHeaterSettings(heater);
     });
   }
 
@@ -42,18 +43,16 @@ class IncomfortDriver extends Homey.Driver {
     await session.done();
 
     session.setHandler("list_devices", async () => {
-      return this.heaters.map((heater, index) => {
-        return this.createHeaterSettings(heater, index);
+      return this.heaters.map(heater => {
+        return this.createHeaterSettings(heater);
       });
     });
 
     session.setHandler("form_complete", async (data) => {
       if (data.host) {
         try {
-          
-          const response = await fetch(data.host, 'heaterlist.json', data.username, data.password);
-          const heaters = (response.heaterlist as string[]).filter(h => h != null);
-          
+          const heaters = await getHeaterList(data.host, data.username, data.password);
+
           this.host = data.host;
           this.username = data.username;
           this.password = data.password;
@@ -75,8 +74,7 @@ class IncomfortDriver extends Homey.Driver {
     session.setHandler('showView', async (view) => {
       if (view === 'loading') {
         try {
-          const response = await fetch(this.host, 'heaterlist.json', this.username, this.password);
-          const heaters = (response.heaterlist as string[]).filter(h => h != null);
+          const heaters = await getHeaterList(this.host, this.username, this.password);
           this.heaters = heaters ?? [];
           session.nextView();
         } catch (error) {

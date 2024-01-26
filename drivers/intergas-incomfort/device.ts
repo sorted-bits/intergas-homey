@@ -1,5 +1,6 @@
 import Homey from 'homey';
-import { fetch } from './api';
+import { getStatus, setTemperature } from './api';
+import { OVERRIDE_MAX_TEMP, OVERRIDE_MIN_TEMP } from './constants';
 
 const INVALID_VALUE = (2 ** 15 - 1) / 100.0
 
@@ -7,9 +8,6 @@ const BITMASK_FAIL = 0x01;
 const BITMASK_PUMP = 0x02;
 const BITMASK_TAP = 0x04;
 const BITMASK_BURNER = 0x08;
-
-const OVERRIDE_MIN_TEMP = 5;
-const OVERRIDE_MAX_TEMP = 30;
 
 const MIN_QUERY_INTERVAL = 10;
 
@@ -21,6 +19,24 @@ class IntergasIncomfort extends Homey.Device {
   _stop: boolean = false;
   heaterIndex: number = 0;
   heaterId: string = '';
+
+  getHeaterSettings = () : { host: string, refreshInterval: number, username?: string, password?: string } => {
+    const host = this.getSetting("host");
+    const username = this.getSetting("username");
+    const password = this.getSetting("password");
+    var refreshInterval = this.getSetting('refreshInterval') ?? 10;
+
+    if (!Number(refreshInterval) || refreshInterval < MIN_QUERY_INTERVAL) {
+      refreshInterval = 10;
+    }
+
+    return {
+      host, 
+      username, 
+      password,
+      refreshInterval
+    }
+  }
 
   displayCodeToText(code: number): string {
     const displayCodes: { [id: number]: string} = {
@@ -87,31 +103,10 @@ class IntergasIncomfort extends Homey.Device {
   }  
 
   async updateStatus() {
-    var host = this.getSetting("host");
-    var username = this.getSetting("username");
-    var password = this.getSetting("password");
-
-    var refreshInterval = this.getSetting('refreshInterval') ?? 10;
+    const { host, username, password, refreshInterval } = this.getHeaterSettings();
 
     try {
-      const numberInterval = Number(refreshInterval);
-      if (numberInterval) {
-        if (numberInterval < MIN_QUERY_INTERVAL) {
-          refreshInterval = String(MIN_QUERY_INTERVAL);
-          await this.setRefreshInterval(refreshInterval);
-        }
-      } else {
-        refreshInterval = String(MIN_QUERY_INTERVAL)
-        await this.setRefreshInterval(refreshInterval);
-      }
-    } catch (ex) {
-      this.error(ex);
-    }
-
-    var url = `data.json?heater=${this.heaterIndex}`;
-    
-    try {
-      let response = await fetch(host, url, username, password);
+      let response = await getStatus(host, this.heaterIndex, username, password);
 
       const display_code = response['displ_code'];
 
@@ -180,15 +175,15 @@ class IntergasIncomfort extends Homey.Device {
     this._room1OverrideTemperature = temperature;
     this._isSettingRoomTemp = true;
 
-    var host = this.getSetting("host");
-    var username = this.getSetting("username");
-    var password = this.getSetting("password");
+    const { host, username, password } = this.getHeaterSettings();
 
-    let url = `data.json?heater=${this.heaterIndex}`
-    url += `&thermostat=${room}`
-    url += `&setpoint=${(temperature - OVERRIDE_MIN_TEMP) * 10}`;
-    await fetch(host, url, username, password);
+    try {
+      await setTemperature(host, this.heaterIndex, room, temperature, username, password);
+    }
+    catch (ex) {
+    }
     this._isSettingRoomTemp = false;
+
   }
 
   async checkCapability(capabilityName: string) {
