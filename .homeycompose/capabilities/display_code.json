@@ -10,6 +10,6 @@
     "uiComponent": "sensor",
     "uiQuickAction": true,
     "decimals": 2,
-    "insights": true,
+    "insights": false,
     "icon": "/assets/capabilities/info.svg"
   }

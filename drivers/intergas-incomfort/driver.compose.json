@@ -6,16 +6,30 @@
   "capabilities": [
     "target_temperature",
     "measure_temperature",
+    "measure_pressure",
     "is_pumping",
     "is_tapping",
     "is_burning",
     "is_failing",
-    "measure_water_pressure",
-    "measure_cv_water_temperature",
-    "measure_tap_water_temperature",
+    "measure_temperature.heater_water",
+    "measure_temperature.tap_water",
     "display_code",
     "display_text"
   ],
+  "capabilitiesOptions": {
+    "measure_temperature.heater_water": {
+      "title": {
+        "en": "CV water temperature",
+        "nl": "CV water temperatuur"
+      }
+    },
+    "measure_temperature.tap_water": {
+      "title": {
+        "en": "Tap water temperature",
+        "nl": "Tap water temperatuur"
+      }
+    }
+  },
   "platforms": [
     "local"
   ],

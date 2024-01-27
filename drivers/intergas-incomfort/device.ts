@@ -67,10 +67,9 @@ class IntergasIncomfort extends Homey.Device {
 
         this.capabilityChange('measure_temperature', response.room1.temperature);
 
-        this.capabilityChange('measure_water_pressure', response.heating.pressure);
-        this.capabilityChange('measure_cv_water_temperature', response.heating.temperature);
-
-        this.capabilityChange('measure_tap_water_temperature', response.tap?.temperature);
+        this.capabilityChange('measure_pressure', response.heating.pressure * 1000);
+        this.capabilityChange('measure_temperature.heater_water', response.heating.temperature);
+        this.capabilityChange('measure_temperature.tap_water', response.tap?.temperature);
 
         if (!this._isSettingRoomTemp) {
           if (this._room1OverrideTemperature === 0) {
@@ -134,9 +133,15 @@ class IntergasIncomfort extends Homey.Device {
 
   }
 
-  async checkCapability(capabilityName: string) {
+  checkCapability = async (capabilityName: string) => {
     if (this.hasCapability(capabilityName) === false) {
       await this.addCapability(capabilityName);
+    }
+  }
+
+  deprecateCapability = async (capabilityName: string) => {
+    if (this.hasCapability(capabilityName)) {
+      await this.removeCapability(capabilityName);
     }
   }
 
@@ -145,8 +150,15 @@ class IntergasIncomfort extends Homey.Device {
    */
   async onInit() {
 
+    await this.deprecateCapability('measure_cv_water_temperature');
+    await this.deprecateCapability('measure_tap_water_temperature');
+    await this.deprecateCapability('measure_water_pressure');
+
     await this.checkCapability('display_code');
     await this.checkCapability('display_text');
+    await this.checkCapability('measure_pressure');
+    await this.checkCapability('measure_temperature.heater_water');
+    await this.checkCapability('measure_temperature.tap_water');
 
     this.registerCapabilityListener("target_temperature", async (value) => {
       this.log('Changing room target temperature to', value);

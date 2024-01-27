@@ -130,16 +130,30 @@
       "capabilities": [
         "target_temperature",
         "measure_temperature",
+        "measure_pressure",
         "is_pumping",
         "is_tapping",
         "is_burning",
         "is_failing",
-        "measure_water_pressure",
-        "measure_cv_water_temperature",
-        "measure_tap_water_temperature",
+        "measure_temperature.heater_water",
+        "measure_temperature.tap_water",
         "display_code",
         "display_text"
       ],
+      "capabilitiesOptions": {
+        "measure_temperature.heater_water": {
+          "title": {
+            "en": "CV water temperature",
+            "nl": "CV water temperatuur"
+          }
+        },
+        "measure_temperature.tap_water": {
+          "title": {
+            "en": "Tap water temperature",
+            "nl": "Tap water temperatuur"
+          }
+        }
+      },
       "platforms": [
         "local"
       ],
@@ -241,7 +255,7 @@
       "uiComponent": "sensor",
       "uiQuickAction": true,
       "decimals": 2,
-      "insights": true,
+      "insights": false,
       "icon": "/assets/capabilities/info.svg"
     },
     "display_text": {
@@ -255,7 +269,7 @@
       "uiComponent": "sensor",
       "uiQuickAction": true,
       "decimals": 2,
-      "insights": true,
+      "insights": false,
       "icon": "/assets/capabilities/info.svg"
     },
     "is_burning": {
@@ -305,58 +319,6 @@
       "uiComponent": "sensor",
       "insights": true,
       "icon": "/assets/capabilities/faucet.svg"
-    },
-    "measure_cv_water_temperature": {
-      "type": "number",
-      "title": {
-        "en": "CV Water Temperature",
-        "nl": "CV Water Temperatuur"
-      },
-      "getable": true,
-      "setable": false,
-      "uiComponent": "sensor",
-      "uiQuickAction": true,
-      "units": {
-        "en": "°C"
-      },
-      "decimals": 2,
-      "insights": true,
-      "icon": "/assets/capabilities/temperature.svg"
-    },
-    "measure_tap_water_temperature": {
-      "type": "number",
-      "title": {
-        "en": "Tap water temperature",
-        "nl": "Tap water temperatuur"
-      },
-      "getable": true,
-      "setable": false,
-      "uiComponent": "sensor",
-      "uiQuickAction": true,
-      "units": {
-        "en": "°C"
-      },
-      "decimals": 2,
-      "insights": true,
-      "icon": "/assets/capabilities/temperature.svg"
-    },
-    "measure_water_pressure": {
-      "type": "number",
-      "title": {
-        "en": "Water pressure",
-        "nl": "Water druk"
-      },
-      "getable": true,
-      "setable": false,
-      "uiComponent": "sensor",
-      "uiQuickAction": true,
-      "units": {
-        "en": "bar",
-        "nl": "bar"
-      },
-      "decimals": 2,
-      "insights": true,
-      "icon": "/assets/capabilities/water.svg"
     }
   }
 }
