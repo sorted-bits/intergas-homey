@@ -55,10 +55,8 @@ class IntergasIncomfort extends Homey.Device {
     const { host, username, password, refreshInterval } = this.getHeaterSettings();
 
     try {
-      let response = await getStatus(host, this.heaterIndex, username, password);
+      let response = await getStatus(this, host, this.heaterIndex, username, password);
       if (response) {
-        console.log(response);
-
         this.capabilityChange('display_code', response.displayCode, 'display_code_changed');
         this.capabilityChange('display_text', response.displayText);
 
@@ -67,20 +65,20 @@ class IntergasIncomfort extends Homey.Device {
         this.booleanChange('is_burning', response.isBurning, "boiler_starts_burning", "boiler_starts_burning");
         this.booleanChange('is_failing', response.isFailing);
 
-        this.capabilityChange('measure_temperature', response.room1?.temperature);
+        this.capabilityChange('measure_temperature', response.room1.temperature);
 
-        this.capabilityChange('measure_water_pressure', response.heating?.pressure);
-        this.capabilityChange('measure_cv_water_temperature', response.heating?.temperature);
+        this.capabilityChange('measure_water_pressure', response.heating.pressure);
+        this.capabilityChange('measure_cv_water_temperature', response.heating.temperature);
 
         this.capabilityChange('measure_tap_water_temperature', response.tap?.temperature);
 
         if (!this._isSettingRoomTemp) {
           if (this._room1OverrideTemperature === 0) {
-            this.capabilityChange('target_temperature', response.room1?.target)
+            this.capabilityChange('target_temperature', response.room1.target)
           } else {
             // Check if the current override temperature is still the same
-            const override = response.room1?.override;
-            const targetTemperature = response.room1?.target;
+            const override = response.room1.override;
+            const targetTemperature = response.room1.target;
 
             if (override && override !== this._room1OverrideTemperature) { // the override temperature has changed, maybe through a different app/device
               this.log(`Override temperature has changed by someone else to`, override);
@@ -128,7 +126,7 @@ class IntergasIncomfort extends Homey.Device {
     const { host, username, password } = this.getHeaterSettings();
 
     try {
-      await setTemperature(host, this.heaterIndex, room, temperature, username, password);
+      await setTemperature(this, host, this.heaterIndex, room, temperature, username, password);
     }
     catch (ex) {
     }

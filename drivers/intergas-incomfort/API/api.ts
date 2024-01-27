@@ -1,11 +1,12 @@
 import fetch, { Headers } from 'node-fetch'
 import { OVERRIDE_MIN_TEMP } from '../constants';
 import { Heater } from '../heater';
-import { IntergasResponse } from './response';
-import { parseStatus } from './parseStatus';
+import { IntergasData } from './response';
+import { checkResponseData } from './helpers';
+import { SimpleClass } from 'homey';
 
-const performCommand = async (host: string, path: string, username?: string, password?  : string): Promise<any> => {
-     
+const performCommand = async (origin: SimpleClass, host: string, path: string, username?: string, password?: string): Promise<any> => {
+
     const url = username ? `http://${host}/protect/${path}` : `http://${host}/${path}`;
 
     const headers = new Headers();
@@ -13,38 +14,62 @@ const performCommand = async (host: string, path: string, username?: string, pas
         headers.append('Authorization', 'Basic ' + btoa(`${username}:${password}`));
     }
 
+    origin.log('Querying Intergas gateway: ', url);
+
     const response = await fetch(url, {
         headers: headers,
     });
 
     const json = await response.json();
     return json;
-  }
-
-export const getStatus = async (host: string, heaterIndex: number, username?: string, password?: string): Promise<IntergasResponse | undefined> => {   
-    var path = `data.json?heater=${heaterIndex}`;
-    let response = await performCommand(host, path, username, password);
-    return parseStatus(response);
 }
 
-export const setTemperature = async (host: string, heaterIndex: number, room: number, temperature: number, username?: string, password?: string) : Promise<void> => {
+export const getStatus = async (origin: SimpleClass, host: string, heaterIndex: number, username?: string, password?: string): Promise<IntergasData | undefined> => {
+    const path = `data.json?heater=${heaterIndex}`;
+
+    try {
+        let response = await performCommand(origin, host, path, username, password);
+
+        if (checkResponseData(response)) {
+            return new IntergasData(response);
+        } else {
+            origin.error('Invalid Intergas data', response);
+        }
+    } catch (ex) {
+        origin.error('getStatus query failed', ex);
+    }
+
+    return undefined;
+}
+
+export const setTemperature = async (origin: SimpleClass, host: string, heaterIndex: number, room: number, temperature: number, username?: string, password?: string): Promise<void> => {
     let path = `data.json?heater=${heaterIndex}`
     path += `&thermostat=${room}`
     path += `&setpoint=${(temperature - OVERRIDE_MIN_TEMP) * 10}`;
 
-    await performCommand(host, path, username, password);
+    try {
+        await performCommand(origin, host, path, username, password);
+    } catch (ex) {
+        origin.error('setTemperature failed', ex);
+        throw ex;
+    }
 }
 
-export const getHeaterList = async (host: string, username?: string, password?: string): Promise<Heater[]> => {
+export const getHeaterList = async (origin: SimpleClass, host: string, username?: string, password?: string): Promise<Heater[]> => {
     let path = 'heaterlist.json';
 
-    const response = await performCommand(host, path, username, password);
-    const heaters: Heater[] = (response.heaterlist as string[]).map((heater, index) => {
-        return {
-            id: heater,
-            index,
-        };
-    });
+    try {
+        const response = await performCommand(origin, host, path, username, password);
+        const heaters: Heater[] = (response.heaterlist as string[]).map((heater, index) => {
+            return {
+                id: heater,
+                index,
+            };
+        });
 
-    return heaters.filter(h => h.id != null);
+        return heaters.filter(h => h.id != null);
+    } catch (ex) {
+        origin.error('getHeaterList failed', ex);
+        throw ex;
+    }
 }

@@ -51,7 +51,7 @@ class IncomfortDriver extends Homey.Driver {
     session.setHandler("form_complete", async (data) => {
       if (data.host) {
         try {
-          const heaters = await getHeaterList(data.host, data.username, data.password);
+          const heaters = await getHeaterList(this, data.host, data.username, data.password);
 
           this.host = data.host;
           this.username = data.username;
@@ -74,7 +74,7 @@ class IncomfortDriver extends Homey.Driver {
     session.setHandler('showView', async (view) => {
       if (view === 'loading') {
         try {
-          const heaters = await getHeaterList(this.host, this.username, this.password);
+          const heaters = await getHeaterList(this, this.host, this.username, this.password);
           this.heaters = heaters ?? [];
           session.nextView();
         } catch (error) {
