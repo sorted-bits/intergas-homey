@@ -51,7 +51,6 @@ export const setTemperature = async (origin: SimpleClass, host: string, heaterIn
         await performCommand(origin, host, path, username, password);
     } catch (ex) {
         origin.error('setTemperature failed', ex);
-        throw ex;
     }
 }
 

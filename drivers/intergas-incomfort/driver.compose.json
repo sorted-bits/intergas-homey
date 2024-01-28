@@ -10,7 +10,7 @@
     "is_pumping",
     "is_tapping",
     "is_burning",
-    "is_failing",
+    "alarm_generic",
     "measure_temperature.heater_water",
     "measure_temperature.tap_water",
     "display_code",
@@ -27,6 +27,12 @@
       "title": {
         "en": "Tap water temperature",
         "nl": "Tap water temperatuur"
+      }
+    },
+    "alarm_generic": {
+      "title": {
+        "en": "Error",
+        "nl": "Foutmelding"
       }
     }
   },
