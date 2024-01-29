@@ -1,6 +1,6 @@
 {
   "name": "com.sortedbits.incomfort",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "main": "app.ts",
   "scripts": {
     "build": "tsc",
@@ -17,7 +17,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "homey-helpers": "1.0.7",
+    "homey-helpers": "1.1.0",
     "node-fetch": "2.7.0"
   }
 }
