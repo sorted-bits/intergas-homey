@@ -22,5 +22,8 @@
   },
   "1.2.0": {
     "en": "Using more standard capabilities, make the error capability an alert, clean up code, better exception handling, usage of homey-helpers"
+  },
+  "1.2.1": {
+    "en": "Refactoring, new homey-helpers"
   }
 }
