@@ -3,6 +3,12 @@ import { PairSession } from 'homey/lib/Driver';
 import { getHeaterList } from './API/api';
 import { Heater } from './heater';
 
+interface FormResult {
+  success: boolean;
+  heaters?: Heater[];
+  message?: unknown;
+}
+
 class IncomfortDriver extends Homey.Driver {
 
   host: string = '';
@@ -22,19 +28,19 @@ class IncomfortDriver extends Homey.Driver {
       name: `Intergas Incomfort (${heater.id})`,
       data: {
         id: heater.id,
-        index: heater.index 
+        index: heater.index,
       },
       settings: {
         host: this.host,
         username: this.username,
         password: this.password,
         refreshInterval: 10,
-      }
+      },
     };
   }
 
   async onPairListDevices() {
-    return this.heaters.map(heater => {
+    return this.heaters.map((heater) => {
       return this.createHeaterSettings(heater);
     });
   }
@@ -42,13 +48,13 @@ class IncomfortDriver extends Homey.Driver {
   async onPair(session: PairSession) {
     await session.done();
 
-    session.setHandler("list_devices", async () => {
-      return this.heaters.map(heater => {
+    session.setHandler('list_devices', async () => {
+      return this.heaters.map((heater) => {
         return this.createHeaterSettings(heater);
       });
     });
 
-    session.setHandler("form_complete", async (data) => {
+    session.setHandler('form_complete', async (data): Promise<FormResult> => {
       if (data.host) {
         try {
           const heaters = await getHeaterList(this, data.host, data.username, data.password);
@@ -56,18 +62,24 @@ class IncomfortDriver extends Homey.Driver {
           this.host = data.host;
           this.username = data.username;
           this.password = data.password;
-          
-          session.nextView();
+
+          await session.nextView();
+
           return {
             success: true,
-            heaters: heaters,
-          }
+            heaters,
+          };
         } catch (error) {
           return {
             success: false,
-            message: error
-          }
+            message: error,
+          };
         }
+      } else {
+        return {
+          success: false,
+          message: 'No host provided',
+        };
       }
     });
 
@@ -76,15 +88,16 @@ class IncomfortDriver extends Homey.Driver {
         try {
           const heaters = await getHeaterList(this, this.host, this.username, this.password);
           this.heaters = heaters ?? [];
-          session.nextView();
+          await session.nextView();
         } catch (error) {
-          session.prevView();
+          await session.prevView();
         }
       }
     });
 
     await session.done();
   }
+
 }
 
 module.exports = IncomfortDriver;

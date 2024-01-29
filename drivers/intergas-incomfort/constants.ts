@@ -8,4 +8,3 @@ export const BITMASK_FAIL = 0x01;
 export const BITMASK_PUMP = 0x02;
 export const BITMASK_TAP = 0x04;
 export const BITMASK_BURNER = 0x08;
-

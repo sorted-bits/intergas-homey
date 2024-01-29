@@ -1,9 +1,12 @@
-import { BITMASK_BURNER, BITMASK_FAIL, BITMASK_PUMP, BITMASK_TAP, INVALID_VALUE } from "../constants";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+ INVALID_VALUE,
+} from '../constants';
 
 export const ioToBool = (io: number, mask: number): boolean => {
     const result = io & mask;
     return Boolean(result);
-}
+};
 
 export const displayCodeToText = (code: number): string => {
     const displayCodes: { [id: number]: string } = {
@@ -21,26 +24,26 @@ export const displayCodeToText = (code: number): string => {
         231: 'postrun ch',
         240: 'boiler int.',
         255: 'buffer',
-    }
+    };
 
     return displayCodes[code] ?? 'Unknown';
-}
+};
 
 export const generateValueWithPrefix = (prefix: string, data: any): number | undefined => {
     const convert = (mostSignificantByte: number, leastSignificantByte: number): number => {
         return (mostSignificantByte * 256 + leastSignificantByte) / 100;
-    }
+    };
 
     const msbKey = `${prefix}_msb`;
-    const lsbKey = `${prefix}_lsb`
+    const lsbKey = `${prefix}_lsb`;
 
     if (data[msbKey] !== undefined && data[lsbKey] !== undefined) {
-        const result = convert(data[msbKey], data[lsbKey])
+        const result = convert(data[msbKey], data[lsbKey]);
         if (result === INVALID_VALUE) return undefined;
         return result;
     }
     return undefined;
-}
+};
 
 const checkWithPrefix = (data: any, prefix: string) : boolean => {
     if (data[`${prefix}_msb`] === undefined) {
@@ -51,7 +54,7 @@ const checkWithPrefix = (data: any, prefix: string) : boolean => {
     }
 
     return true;
-}
+};
 
 export const checkResponseData = (data: any): boolean => {
     if (data === undefined) {
@@ -81,10 +84,10 @@ export const checkResponseData = (data: any): boolean => {
     if (!checkWithPrefix(data, 'room_temp_set_1')) {
         return false;
     }
-    
+
     if (!checkWithPrefix(data, 'room_temp_1')) {
         return false;
     }
-    
+
     return true;
-}
+};

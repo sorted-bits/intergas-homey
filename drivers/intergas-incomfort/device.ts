@@ -1,12 +1,10 @@
 import Homey from 'homey';
+
+import {
+  Device,
+} from 'homey-helpers';
 import { getStatus, setTemperature } from './API/api';
 import { OVERRIDE_MAX_TEMP, OVERRIDE_MIN_TEMP, MIN_QUERY_INTERVAL } from './constants';
-
-import { 
-  addCapabilityIfNotExists, 
-  deprecateCapability,
-  capabilityChange
-} from 'homey-helpers';
 
 class IntergasIncomfort extends Homey.Device {
 
@@ -18,10 +16,10 @@ class IntergasIncomfort extends Homey.Device {
   heaterId: string = '';
 
   getHeaterSettings = (): { host: string, refreshInterval: number, username?: string, password?: string } => {
-    const host = this.getSetting("host");
-    const username = this.getSetting("username");
-    const password = this.getSetting("password");
-    var refreshInterval = this.getSetting('refreshInterval') ?? 10;
+    const host = this.getSetting('host');
+    const username = this.getSetting('username');
+    const password = this.getSetting('password');
+    let refreshInterval = this.getSetting('refreshInterval') ?? 10;
 
     if (!Number(refreshInterval) || refreshInterval < MIN_QUERY_INTERVAL) {
       refreshInterval = 10;
@@ -31,65 +29,65 @@ class IntergasIncomfort extends Homey.Device {
       host,
       username,
       password,
-      refreshInterval
-    }
+      refreshInterval,
+    };
   }
 
   async booleanChange(capability: string, value: boolean | undefined, startTrigger: string, stopTrigger: string) {
-
     if (value !== undefined) {
       const trigger = (value) ? startTrigger : stopTrigger;
-      capabilityChange(this, capability, value, trigger);
+      await Device.capabilityChange(this, capability, value, trigger);
     } else {
-      this.error(`Trying to set an undefined value to ${capability}`)
+      this.error(`Trying to set an undefined value to ${capability}`);
     }
-
   }
 
   async updateStatus() {
-    const { host, username, password, refreshInterval } = this.getHeaterSettings();
+    const {
+ host, username, password, refreshInterval,
+} = this.getHeaterSettings();
 
     try {
-      let response = await getStatus(this, host, this.heaterIndex, username, password);
+      const response = await getStatus(this, host, this.heaterIndex, username, password);
       if (response) {
-        capabilityChange(this, 'display_code', response.displayCode, 'display_code_changed');
-        capabilityChange(this, 'display_text', response.displayText);
+        await Device.capabilityChange(this, 'display_code', response.displayCode, 'display_code_changed');
+        await Device.capabilityChange(this, 'display_text', response.displayText);
 
-        this.booleanChange('is_pumping', response.isPumping, "boiler_starts_pumping", "boiler_stops_pumping");
-        this.booleanChange('is_burning', response.isBurning, "boiler_starts_burning", "boiler_starts_burning");
+        await this.booleanChange('is_pumping', response.isPumping, 'boiler_starts_pumping', 'boiler_stops_pumping');
+        await this.booleanChange('is_burning', response.isBurning, 'boiler_starts_burning', 'boiler_starts_burning');
 
-        capabilityChange(this, 'is_tapping', response.isTapping);
-        capabilityChange(this, 'alarm_generic', response.isFailing);
+        await Device.capabilityChange(this, 'is_tapping', response.isTapping);
+        await Device.capabilityChange(this, 'alarm_generic', response.isFailing);
 
-        capabilityChange(this, 'measure_temperature', response.room1.temperature);
+        await Device.capabilityChange(this, 'measure_temperature', response.room1.temperature);
 
-        capabilityChange(this, 'measure_pressure', response.heating.pressure * 1000);
-        capabilityChange(this, 'measure_temperature.heater_water', response.heating.temperature);
-        capabilityChange(this, 'measure_temperature.tap_water', response.tap?.temperature);
+        await Device.capabilityChange(this, 'measure_pressure', response.heating.pressure * 1000);
+        await Device.capabilityChange(this, 'measure_temperature.heater_water', response.heating.temperature);
+        await Device.capabilityChange(this, 'measure_temperature.tap_water', response.tap?.temperature);
 
         if (!this._isSettingRoomTemp) {
           if (this._room1OverrideTemperature === 0) {
-            capabilityChange(this, 'target_temperature', response.room1.target)
+            await Device.capabilityChange(this, 'target_temperature', response.room1.target);
           } else {
             // Check if the current override temperature is still the same
-            const override = response.room1.override;
+            const { override } = response.room1;
             const targetTemperature = response.room1.target;
 
             if (override && override !== this._room1OverrideTemperature) { // the override temperature has changed, maybe through a different app/device
-              this.log(`Override temperature has changed by someone else to`, override);
+              this.log('Override temperature has changed by someone else to', override);
               this._room1OverrideTemperature = override;
             }
 
             if (targetTemperature === this._room1OverrideTemperature) { // targetTemperature has caught up, we can use that now
               this._room1OverrideTemperature = 0;
-              capabilityChange(this, 'target_temperature', targetTemperature);
+              await Device.capabilityChange(this, 'target_temperature', targetTemperature);
 
-              this.log(`Target temperature has caught up, using that`, targetTemperature);
+              this.log('Target temperature has caught up, using that', targetTemperature);
             } else {
               // Override temperature has not yet been set onto target_temperature, we better use this
-              capabilityChange(this, 'target_temperature', override);
+              await Device.capabilityChange(this, 'target_temperature', override);
 
-              this.log(`Target temperature is lagging behind, using override`, override);
+              this.log('Target temperature is lagging behind, using override', override);
             }
           }
         }
@@ -100,10 +98,8 @@ class IntergasIncomfort extends Homey.Device {
       this.error('Failed to update status', error);
     }
 
-    if (!this._stop) { // Stop repeating the query, 
-      setTimeout(() => {
-        this.updateStatus()
-      }, Number(refreshInterval) * 1000);
+    if (!this._stop) { // Stop repeating the query,
+      await this.homey.setTimeout(this.updateStatus.bind(this), refreshInterval * 1000);
     }
   }
 
@@ -111,7 +107,7 @@ class IntergasIncomfort extends Homey.Device {
     this.log(`Setting override temperature ${temperature} for room ${room}`);
 
     if (temperature > OVERRIDE_MAX_TEMP || temperature < OVERRIDE_MIN_TEMP) {
-      this.error(`We cannot set this temperature, has to be between 5 and 30 degrees`);
+      this.error('We cannot set this temperature, has to be between 5 and 30 degrees');
       return;
     }
 
@@ -124,42 +120,42 @@ class IntergasIncomfort extends Homey.Device {
 
     this._isSettingRoomTemp = false;
   }
+
   /**
    * onInit is called when the device is initialized.
    */
   async onInit() {
+    await Device.deprecateCapability(this, 'measure_cv_water_temperature');
+    await Device.deprecateCapability(this, 'measure_tap_water_temperature');
+    await Device.deprecateCapability(this, 'measure_water_pressure');
 
-    await deprecateCapability(this, 'measure_cv_water_temperature');
-    await deprecateCapability(this, 'measure_tap_water_temperature');
-    await deprecateCapability(this, 'measure_water_pressure');
+    await Device.deprecateCapability(this, 'is_failing');
 
-    await deprecateCapability(this, 'is_failing');
-    
-    await addCapabilityIfNotExists(this, 'display_code');
-    await addCapabilityIfNotExists(this, 'display_text');
-    await addCapabilityIfNotExists(this, 'measure_pressure');
-    await addCapabilityIfNotExists(this, 'measure_temperature.heater_water');
-    await addCapabilityIfNotExists(this, 'measure_temperature.tap_water');
+    await Device.addCapabilityIfNotExists(this, 'display_code');
+    await Device.addCapabilityIfNotExists(this, 'display_text');
+    await Device.addCapabilityIfNotExists(this, 'measure_pressure');
+    await Device.addCapabilityIfNotExists(this, 'measure_temperature.heater_water');
+    await Device.addCapabilityIfNotExists(this, 'measure_temperature.tap_water');
 
-    await addCapabilityIfNotExists(this, 'is_burning');
-    await addCapabilityIfNotExists(this, 'is_tapping');
-    await addCapabilityIfNotExists(this, 'is_pumping');
-    await addCapabilityIfNotExists(this, 'alarm_generic');
+    await Device.addCapabilityIfNotExists(this, 'is_burning');
+    await Device.addCapabilityIfNotExists(this, 'is_tapping');
+    await Device.addCapabilityIfNotExists(this, 'is_pumping');
+    await Device.addCapabilityIfNotExists(this, 'alarm_generic');
 
-    this.registerCapabilityListener("target_temperature", async (value) => {
+    this.registerCapabilityListener('target_temperature', async (value) => {
       this.log('Changing room target temperature to', value);
       this._isSettingRoomTemp = true;
 
-      this.setOverride(value, this._room);
-    })
+      await this.setOverride(value, this._room);
+    });
 
-    var data = this.getData();
+    const data = this.getData();
     this.heaterIndex = data['index'];
     this.heaterId = data['id'];
 
     this.log(`Intergas Incomfort device (${this.heaterId}:${this.heaterIndex}) has been initialized`);
 
-    this.updateStatus();
+    await this.updateStatus();
   }
 
   /**
@@ -186,7 +182,7 @@ class IntergasIncomfort extends Homey.Device {
     newSettings: { [key: string]: boolean | string | number | undefined | null };
     changedKeys: string[];
   }): Promise<string | void> {
-    this.log("Intergas Incomfort settings where changed");
+    this.log('Intergas Incomfort settings where changed');
   }
 
   /**
@@ -205,6 +201,7 @@ class IntergasIncomfort extends Homey.Device {
     this.log('Intergas Incomfort has been deleted');
     this._stop = true;
   }
+
 }
 
 module.exports = IntergasIncomfort;

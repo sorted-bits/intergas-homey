@@ -1,5 +1,7 @@
-import { BITMASK_BURNER, BITMASK_FAIL, BITMASK_PUMP, BITMASK_TAP } from "../constants";
-import { displayCodeToText, generateValueWithPrefix, ioToBool } from "./helpers";
+import {
+ BITMASK_BURNER, BITMASK_FAIL, BITMASK_PUMP, BITMASK_TAP,
+} from '../constants';
+import { displayCodeToText, generateValueWithPrefix, ioToBool } from './helpers';
 
 export interface Room {
     temperature: number;
@@ -17,6 +19,7 @@ export interface Tap {
 }
 
 export class IntergasData {
+
     displayCode: number;
     displayText: string;
 
@@ -29,7 +32,7 @@ export class IntergasData {
     isPumping: boolean;
     isTapping: boolean;
     isBurning: boolean;
-    isFailing: boolean;    
+    isFailing: boolean;
 
     constructor(jsonData: any) {
         if (jsonData === undefined) {
@@ -50,14 +53,15 @@ export class IntergasData {
         };
 
         this.room1 = {
-            override: generateValueWithPrefix(`room_set_ovr_1`, jsonData) ?? 0,
-            target: generateValueWithPrefix(`room_temp_set_1`, jsonData) ?? 0,
-            temperature: generateValueWithPrefix(`room_temp_1`, jsonData) ?? 0,
-        }
+            override: generateValueWithPrefix('room_set_ovr_1', jsonData) ?? 0,
+            target: generateValueWithPrefix('room_temp_set_1', jsonData) ?? 0,
+            temperature: generateValueWithPrefix('room_temp_1', jsonData) ?? 0,
+        };
 
-        this.isBurning = ioToBool(IO, BITMASK_BURNER),
-        this.isFailing = ioToBool(IO, BITMASK_FAIL),
-        this.isTapping = ioToBool(IO, BITMASK_TAP),
-        this.isPumping = ioToBool(IO, BITMASK_PUMP)        
+        this.isBurning = ioToBool(IO, BITMASK_BURNER);
+        this.isFailing = ioToBool(IO, BITMASK_FAIL);
+        this.isTapping = ioToBool(IO, BITMASK_TAP);
+        this.isPumping = ioToBool(IO, BITMASK_PUMP);
     }
+
 }
