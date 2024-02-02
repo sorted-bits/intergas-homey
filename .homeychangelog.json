@@ -25,5 +25,8 @@
   },
   "1.2.1": {
     "en": "Refactoring, new homey-helpers"
+  },
+  "1.2.2": {
+    "en": "Updated dependency to latest version, automated testing, some developer updates"
   }
 }
