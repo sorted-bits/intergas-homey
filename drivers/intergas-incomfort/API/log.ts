@@ -14,11 +14,11 @@ export interface IBaseLogger {
 export class Logger implements IBaseLogger {
 
     log(...args: any[]): void {
-        console.log(...args);
+        // console.log(...args);
     }
 
     error(...args: any[]): void {
-        console.error(...args);
+        // console.error(...args);
     }
 
 }
