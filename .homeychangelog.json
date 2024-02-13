@@ -28,5 +28,8 @@
   },
   "1.2.2": {
     "en": "Updated dependency to latest version, automated testing, some developer updates"
+  },
+  "1.2.3": {
+    "en": "Added descriptions to pairing screen."
   }
 }
