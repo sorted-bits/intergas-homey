@@ -31,5 +31,8 @@
   },
   "1.2.3": {
     "en": "Added descriptions to pairing screen."
+  },
+  "1.2.4": {
+    "en": "Fix pairing sessions closing too soon"
   }
 }
