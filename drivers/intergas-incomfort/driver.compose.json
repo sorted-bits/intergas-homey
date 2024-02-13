@@ -58,7 +58,7 @@
     {
       "id": "list_devices",
       "template": "list_devices",
-      "navigation":  {
+      "navigation": {
         "next": "add_devices"
       }
     },

@@ -27,7 +27,7 @@ class IncomfortDriver extends Homey.Driver {
     return {
       name: `Intergas Incomfort (${heater.id})`,
       data: {
-        id: heater.id,
+        id: `${heater.id}`,
         index: heater.index,
       },
       settings: {
@@ -39,15 +39,7 @@ class IncomfortDriver extends Homey.Driver {
     };
   }
 
-  async onPairListDevices() {
-    return this.heaters.map((heater) => {
-      return this.createHeaterSettings(heater);
-    });
-  }
-
   async onPair(session: PairSession) {
-    await session.done();
-
     session.setHandler('list_devices', async () => {
       return this.heaters.map((heater) => {
         return this.createHeaterSettings(heater);
@@ -94,8 +86,6 @@ class IncomfortDriver extends Homey.Driver {
         }
       }
     });
-
-    await session.done();
   }
 
 }
