@@ -4,6 +4,9 @@
         "gateway": "Gateway host",
         "username": "Username",
         "password": "Password",
-        "submit": "Submit"
+        "submit": "Submit",
+        "gateway_description": "The hosname or IP address of the gateway, you should can check your internet router to find this.",
+        "username_description": "The username you use to login to the gateway. Usually this is `admin`.",
+        "password_description": "The password you use to login to the gateway. This password is mentioned on the back of your gateway device."
     }
 }

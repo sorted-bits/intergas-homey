@@ -33,6 +33,11 @@
         flex-direction: column;
         justify-content: space-between;
     }
+
+    .device-description {
+        margin-top: 10px;
+        color: rgb(147, 147, 154);
+    }
 </style>
 
 <form class="homey-form">
@@ -42,19 +47,27 @@
         <div class="homey-form-group">
             <label class="homey-form-label" for="host" data-i18n="login.gateway"></label>
             <input class="homey-form-input" id="host" type="text" value="" />
+            <div class="device-description">
+                <span data-i18n="login.gateway_description"></span>
+            </div>
         </div>
-
         <div class="homey-form-group">
             <label class="homey-form-label" for="username" data-i18n="login.username"></label>
             <input class="homey-form-input" id="username" type="text" value="" />
+            <div class="device-description">
+                <span data-i18n="login.username_description"></span>
+            </div>
         </div>
         <div class="homey-form-group">
             <label class="homey-form-label" for="password" data-i18n="login.password"></label>
             <input class="homey-form-input" id="password" type="password" value="" />
+            <div class="device-description">
+                <span data-i18n="login.password_description"></span>
+            </div>
         </div>
     </fieldset>
 
-    <button id="submit-button" type="button" onclick="submitForm()" class="homey-button-primary-full" data-i18n="login.submit">
+    <button id="submit-button" type="button" onclick="submitForm()" class="homey-button-primary-full"
+        data-i18n="login.submit">
     </button>
 </form>
-

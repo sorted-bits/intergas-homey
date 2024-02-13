@@ -4,6 +4,9 @@
         "gateway": "Gateway host",
         "username": "Gebruikersnaam",
         "password": "Wachtwoord",
-        "submit": "Versturen"
+        "submit": "Versturen",
+        "gateway_description": "Het IP adres van je Intergas gateway, je kunt je router gebruiken om dit te achterhalen.",
+        "username_description": "De gebruikersnaam van je gateway, standaard is dit `admin`.",
+        "password_description": "Het wachtwoord om in te loggen op je gateway, dit staat op de achterkant van je gateway apparaat vermeldt."
     }
 }
