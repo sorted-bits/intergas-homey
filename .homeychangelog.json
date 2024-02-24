@@ -34,5 +34,8 @@
   },
   "1.2.4": {
     "en": "Fix pairing sessions closing too soon"
+  },
+  "1.3.0": {
+    "en": "Better pairing process, more logging"
   }
 }
