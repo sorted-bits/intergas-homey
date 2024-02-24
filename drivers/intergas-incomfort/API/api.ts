@@ -67,7 +67,7 @@ export const setTemperature = async (origin: IBaseLogger, host: string, heaterIn
 
     origin.log('Setting temperature: ', path);
 
-    const response = await performCommand(origin, host, path, username, password);
+    const response = await performCommand(origin, host, path, username, password, false);
     if (response.status === 200) {
         return true;
     }

@@ -46,5 +46,27 @@
                 "en": "When the display code has changed"
             }
         }
+    ],
+    "actions": [
+        {
+            "id": "change_target_temperature_by",
+            "title": "Change target temperature by a certain amount of celsius",
+            "titleFormatted": {
+                "en": "Change target temperature by [[temperature_change]] °C",
+                "nl": "Verander doel temperatuur met [[temperature_change]] °C"
+            },
+            "args": [
+                {
+                    "type": "number",
+                    "name": "temperature_change",
+                    "title": {
+                        "en": "Degrees",
+                        "nl": "Graden"
+                    },
+                    "max": 20,
+                    "min": -20
+                }
+            ]
+        }
     ]
 }
