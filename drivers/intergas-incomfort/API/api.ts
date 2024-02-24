@@ -2,41 +2,61 @@ import fetch from 'node-fetch';
 import { OVERRIDE_MIN_TEMP } from '../constants';
 import { Heater } from '../heater';
 import { IntergasData } from './response';
-import { checkResponseData } from './helpers';
+import { CommandResponse, checkResponseData } from './helpers';
 import { IBaseLogger } from './log';
 
-const performCommand = async (origin: IBaseLogger, host: string, path: string, username?: string, password?: string): Promise<any> => {
+
+const performCommand = async (origin: IBaseLogger, host: string, path: string, username?: string, password?: string, logOutput: boolean = true): Promise<CommandResponse> => {
     const url = username ? `http://${host}/protect/${path}` : `http://${host}/${path}`;
 
     const headers = username ? {
         Authorization: `Basic ${btoa(`${username}:${password}`)}`,
     } : undefined;
 
-    origin.log('Querying Intergas gateway: ', url);
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers,
+        });
 
-    const response = await fetch(url, {
-        method: 'GET',
-        headers,
-    });
+        origin.log('Received response for ', path, response.status, response.statusText);
 
-    const json = await response.json();
-    return json;
+        if (response.status === 200) {
+            const json = await response.json();
+
+            if (logOutput) {
+                origin.log('Json response for ', path, json);
+            }
+
+            return {
+                json,
+                status: response.status,
+                statusText: response.statusText,
+            }
+        } else {
+            return {
+                status: response.status,
+                statusText: response.statusText,
+            };
+        }
+    } catch (error) {
+        return {
+            status: 500,
+            statusText: error ? error.toString() : 'Unknown error',
+        }
+    }
 };
 
 export const getStatus = async (origin: IBaseLogger, host: string, heaterIndex: number, username?: string, password?: string): Promise<IntergasData | undefined> => {
     const path = `data.json?heater=${heaterIndex}`;
 
-    try {
-        const response = await performCommand(origin, host, path, username, password);
+    const response = await performCommand(origin, host, path, username, password, false);
 
-        if (checkResponseData(response)) {
-            return new IntergasData(response);
-        }
-        origin.error('Invalid Intergas data', response);
-    } catch (ex) {
-        origin.error('getStatus query failed', ex);
+    if (checkResponseData(response)) {
+        return new IntergasData(response.json);
     }
 
+    origin.error('Invalid Intergas data', JSON.stringify(response));
     return undefined;
 };
 
@@ -47,21 +67,25 @@ export const setTemperature = async (origin: IBaseLogger, host: string, heaterIn
 
     origin.log('Setting temperature: ', path);
 
-    try {
-        await performCommand(origin, host, path, username, password);
+    const response = await performCommand(origin, host, path, username, password);
+    if (response.status === 200) {
         return true;
-    } catch (ex) {
-        origin.error('setTemperature failed', ex);
-        return false;
     }
+
+    origin.error('setTemperature failed', JSON.stringify(response));
+
+    return false;
 };
 
 export const getHeaterList = async (origin: IBaseLogger, host: string, username?: string, password?: string): Promise<Heater[]> => {
+    origin.log('Getting heater list', host, username, '********');
+
     const path = 'heaterlist.json';
 
-    try {
-        const response = await performCommand(origin, host, path, username, password);
-        const heaters: Heater[] = (response.heaterlist as string[]).map((heater, index) => {
+    const response = await performCommand(origin, host, path, username, password);
+
+    if (response.status === 200) {
+        const heaters: Heater[] = (response.json.heaterlist as string[]).map((heater, index) => {
             return {
                 id: heater,
                 index,
@@ -69,8 +93,9 @@ export const getHeaterList = async (origin: IBaseLogger, host: string, username?
         });
 
         return heaters.filter((h) => h.id != null);
-    } catch (ex) {
-        origin.error('getHeaterList failed', ex);
-        throw ex;
     }
+
+    origin.error('getHeaterList faield', JSON.stringify(response));
+
+    throw new Error('Failed to fetch heaters');
 };

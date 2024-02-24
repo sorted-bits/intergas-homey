@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
- INVALID_VALUE,
+    INVALID_VALUE,
 } from '../constants';
+
+export interface CommandResponse {
+    json?: any;
+    status: number;
+    statusText?: string;
+}
+
 
 export const ioToBool = (io: number, mask: number): boolean => {
     const result = io & mask;
@@ -45,7 +52,7 @@ export const generateValueWithPrefix = (prefix: string, data: any): number | und
     return undefined;
 };
 
-const checkWithPrefix = (data: any, prefix: string) : boolean => {
+const checkWithPrefix = (data: any, prefix: string): boolean => {
     if (data[`${prefix}_msb`] === undefined) {
         return false;
     }
@@ -56,36 +63,38 @@ const checkWithPrefix = (data: any, prefix: string) : boolean => {
     return true;
 };
 
-export const checkResponseData = (data: any): boolean => {
-    if (data === undefined) {
+export const checkResponseData = (data: CommandResponse): boolean => {
+    if (data === undefined || data.json === undefined || data.status !== 200) {
         return false;
     }
 
-    if (data['displ_code'] === undefined) {
+    const json = data.json;
+
+    if (json['displ_code'] === undefined) {
         return false;
     }
 
-    if (!checkWithPrefix(data, 'tap_temp')) {
+    if (!checkWithPrefix(json, 'tap_temp')) {
         return false;
     }
 
-    if (!checkWithPrefix(data, 'ch_temp')) {
+    if (!checkWithPrefix(json, 'ch_temp')) {
         return false;
     }
 
-    if (!checkWithPrefix(data, 'ch_pressure')) {
+    if (!checkWithPrefix(json, 'ch_pressure')) {
         return false;
     }
 
-    if (!checkWithPrefix(data, 'room_set_ovr_1')) {
+    if (!checkWithPrefix(json, 'room_set_ovr_1')) {
         return false;
     }
 
-    if (!checkWithPrefix(data, 'room_temp_set_1')) {
+    if (!checkWithPrefix(json, 'room_temp_set_1')) {
         return false;
     }
 
-    if (!checkWithPrefix(data, 'room_temp_1')) {
+    if (!checkWithPrefix(json, 'room_temp_1')) {
         return false;
     }
 

@@ -20,7 +20,7 @@
             if (result.success !== true) {
                 Homey.alert(`Failed to connect, please check the form: ${JSON.stringify(result.message)}`);
             } else {
-                console.log('Found these heaters: ', result.heaters);
+                Homey.nextView();
             }
         });
     }

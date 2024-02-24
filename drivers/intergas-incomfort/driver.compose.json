@@ -52,10 +52,6 @@
       "id": "pair"
     },
     {
-      "id": "loading",
-      "template": "loading"
-    },
-    {
       "id": "list_devices",
       "template": "list_devices",
       "navigation": {
