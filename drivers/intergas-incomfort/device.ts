@@ -154,7 +154,7 @@ class IntergasIncomfort extends Homey.Device {
     const actionCard = this.homey.flow.getActionCard('change_target_temperature_by');
     actionCard.registerRunListener(async (args, state) => {
       const currentTarget = (this._room1OverrideTemperature !== 0) ? this._room1OverrideTemperature : this.getCapabilityValue('measure_temperature');
-      const newTarget = currentTarget + Number(args['temperature_change']);
+      const newTarget = (Math.round(currentTarget * 2) / 2) + Number(args['temperature_change']);
       this.setOverride(newTarget, this._room);
     });
 
