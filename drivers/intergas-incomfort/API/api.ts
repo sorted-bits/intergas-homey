@@ -9,17 +9,17 @@ import { IBaseLogger } from './log';
 const performCommand = async (origin: IBaseLogger, host: string, path: string, username?: string, password?: string, logOutput: boolean = true): Promise<CommandResponse> => {
     const url = username ? `http://${host}/protect/${path}` : `http://${host}/${path}`;
 
-    const headers = username ? {
-        Authorization: `Basic ${btoa(`${username}:${password}`)}`,
-    } : undefined;
-
-    origin.log('Performing command', url);
-
     try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers,
-        });
+        const response = username
+            ? await fetch(url, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Basic ${btoa(`${username}:${password}`)}`,
+                },
+            })
+            : await fetch(url, {
+                method: 'GET',
+            });
 
         origin.log('Received response for ', path, response.status, response.statusText);
 

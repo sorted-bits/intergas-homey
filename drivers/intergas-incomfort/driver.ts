@@ -17,8 +17,8 @@ interface FormData {
 class IncomfortDriver extends Homey.Driver {
 
   host: string = '';
-  username: string = '';
-  password: string = '';
+  username: string | undefined;
+  password: string | undefined;
   heaters: Heater[] = [];
 
   /**
@@ -47,7 +47,7 @@ class IncomfortDriver extends Homey.Driver {
     };
 
     const logoutput = JSON.parse(JSON.stringify(setting));
-    logoutput.settings.password = setting.settings.password.length.toString();
+    logoutput.settings.password = undefined;
 
     this.log('createHeaterSettings', JSON.stringify(logoutput));
 
@@ -70,17 +70,17 @@ class IncomfortDriver extends Homey.Driver {
       }
       this.log('form_complete', JSON.stringify(logouput));
 
-      if (data.host && data.username && data.password) {
+      if (data.host) {
         try {
-          this.log('Using login details to check connection', data.host, data.username, data.password.length);
+          this.log('Using login details to check connection', data.host, data.username, data.password?.length);
 
           const heaters = await getHeaterList(this, data.host, data.username, data.password);
 
           this.log('Heaterlist during pairing', heaters.length)
 
           this.host = data.host;
-          this.username = data.username;
-          this.password = data.password;
+          this.username = data.username ?? '';
+          this.password = data.password ?? '';
           this.heaters = heaters;
 
           this.log('Succesfully paired, returning success');
