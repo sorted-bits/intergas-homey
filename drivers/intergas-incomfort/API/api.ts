@@ -13,6 +13,8 @@ const performCommand = async (origin: IBaseLogger, host: string, path: string, u
         Authorization: `Basic ${btoa(`${username}:${password}`)}`,
     } : undefined;
 
+    origin.log('Performing command', url);
+
     try {
         const response = await fetch(url, {
             method: 'GET',
