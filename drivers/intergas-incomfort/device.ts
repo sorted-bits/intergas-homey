@@ -151,13 +151,6 @@ class IntergasIncomfort extends Homey.Device {
       await this.setOverride(value, this._room);
     });
 
-    const actionCard = this.homey.flow.getActionCard('change_target_temperature_by');
-    actionCard.registerRunListener(async (args, state) => {
-      const currentTarget = (this._room1OverrideTemperature !== 0) ? this._room1OverrideTemperature : this.getCapabilityValue('measure_temperature');
-      const newTarget = (Math.round(currentTarget * 2) / 2) + Number(args['temperature_change']);
-      this.setOverride(newTarget, this._room);
-    });
-
     const data = this.getData();
     this.heaterIndex = data['index'];
     this.heaterId = data['id'];
@@ -167,6 +160,15 @@ class IntergasIncomfort extends Homey.Device {
     await this.updateStatus();
   }
 
+  public changeTargetTemperatureBy = async (args: any) => {
+    const currentTarget = (this._room1OverrideTemperature !== 0) ? this._room1OverrideTemperature : this.getCapabilityValue('target_temperature');
+
+    this.log('Current target', currentTarget);
+
+    const newTarget = (Math.round(currentTarget * 2) / 2) + Number(args['temperature_change']);
+    await this.setOverride(newTarget, this._room);
+
+  }
   /**
    * onAdded is called when the user adds the device, called just after pairing.
    */

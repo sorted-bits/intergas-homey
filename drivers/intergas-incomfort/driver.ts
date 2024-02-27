@@ -26,6 +26,12 @@ class IncomfortDriver extends Homey.Driver {
    */
   async onInit() {
     this.log('IncomfortDriver has been initialized');
+
+    this.homey.flow.getActionCard('change_target_temperature_by').registerRunListener(async (args) => {
+      this.log('change_target_temperature_by', args);
+      args.device.changeTargetTemperatureBy(args);
+    });
+
   }
 
   createHeaterSettings(heater: Heater): any {
