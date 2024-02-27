@@ -46,5 +46,8 @@
   },
   "1.3.3": {
     "en": "Allow access without username and password"
+  },
+  "1.3.4": {
+    "en": "Fix relative temperature action"
   }
 }
