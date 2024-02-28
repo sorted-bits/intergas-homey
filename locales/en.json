@@ -8,5 +8,11 @@
         "gateway_description": "The hosname or IP address of the gateway, you should can check your internet router to find this.",
         "username_description": "The username you use to login to the gateway. Usually this is `admin`.",
         "password_description": "The password you use to login to the gateway. This password is mentioned on the back of your gateway device."
+    },
+    "device_select": {
+        "title": "Select your gateway type",
+        "v1": "This is the first Intergas gateway, colored red. This was typically paired with a Honeywell round thermostat and introduced in 2017.",
+        "v2": "This is the current Intergas gateway, colored black.",
+        "submit": "Next"
     }
 }

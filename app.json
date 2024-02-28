@@ -200,6 +200,9 @@
       },
       "pair": [
         {
+          "id": "gateway_type"
+        },
+        {
           "id": "pair"
         },
         {

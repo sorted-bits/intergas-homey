@@ -1,0 +1,71 @@
+<script type="application/javascript">
+    function submitForm() {
+        var button = document.getElementById('submit-button');
+        button.classList.add('is-loading');
+
+        var device_type = document.querySelector('input[name="device_type"]:checked').value;
+
+        var data = {
+            deviceType: device_type,
+        };
+
+        Homey.emit("device_type_selected", data).then(function (result) {
+            button.classList.remove('is-loading');
+
+            if (!result.success) {
+                Homey.alert(result.message);
+            } else {
+                Homey.nextView();
+            }
+        });
+    }
+
+</script>
+
+<style>
+    .homey-form {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .device-description {
+        color: rgb(147, 147, 154);
+    }
+</style>
+
+<form class="homey-form">
+    <div class="top-aligned">
+        <fieldset class="homey-form-fieldset">
+            <legend class="homey-form-legend" data-i18n="device_select.title"></legend>
+        </fieldset>
+
+        <div class="modbus-device-types">
+            <div class="homey-form-group">
+                <label class="homey-form-radio">
+                    <input class="homey-form-radio-input" type="radio" name="device_type" id="device_type" value="v1" />
+                    <span class="homey-form-radio-checkmark"></span>
+                    <span class="homey-form-radio-text">Intergas Gateway v1</span>
+                </label>
+                <div class="device-description" data-i18n="device_select.v1">
+                </div>
+            </div>
+
+            <div class="homey-form-group">
+                <label class="homey-form-radio">
+                    <input class="homey-form-radio-input" type="radio" name="device_type" id="device_type" value="v2"
+                        checked="checked" />
+                    <span class="homey-form-radio-checkmark"></span>
+                    <span class="homey-form-radio-text">Intergas Gateway v2</span>
+                </label>
+                <div class="device-description" data-i18n="device_select.v2">
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <button id="submit-button" type="button" onclick="submitForm()" class="homey-button-primary-full"
+        data-i18n="device_select.submit">
+    </button>
+</form>

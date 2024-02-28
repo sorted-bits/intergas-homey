@@ -8,6 +8,10 @@ interface FormResult {
   message?: unknown;
 }
 
+interface DeviceTypeFormData {
+  deviceType: string;
+}
+
 interface FormData {
   host: string | undefined;
   username: string | undefined;
@@ -20,6 +24,8 @@ class IncomfortDriver extends Homey.Driver {
   username: string | undefined;
   password: string | undefined;
   heaters: Heater[] = [];
+
+  pairingDeviceType: string = 'v2';
 
   /**
    * onInit is called when the driver is initialized.
@@ -68,6 +74,19 @@ class IncomfortDriver extends Homey.Driver {
         return this.createHeaterSettings(heater);
       });
     });
+
+    session.setHandler('get_device_model', async (): Promise<string> => {
+      return this.pairingDeviceType;
+    });
+
+    session.setHandler('device_type_selected', async (data: DeviceTypeFormData): Promise<FormResult> => {
+      this.log('device_type_selected', data.deviceType);
+
+      this.pairingDeviceType = data.deviceType;
+
+      return { success: true };
+    });
+
 
     session.setHandler('form_complete', async (data: FormData): Promise<FormResult> => {
       const logouput = {

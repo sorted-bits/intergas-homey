@@ -8,5 +8,11 @@
         "gateway_description": "Het IP adres van je Intergas gateway, je kunt je router gebruiken om dit te achterhalen.",
         "username_description": "De gebruikersnaam van je gateway, standaard is dit `admin`.",
         "password_description": "Het wachtwoord om in te loggen op je gateway, dit staat op de achterkant van je gateway apparaat vermeldt."
+    },
+    "device_select": {
+        "title": "Kies gateway type",
+        "v1": "Dit is de eerste Intergas gateway, rood van kleur. Vaak werd deze geleverd met een Honeywell Round en geintrodeerd in 2017.",
+        "v2": "Dit is de huidige Intergas gateway, zwart van kleur.",
+        "submit": "Volgende"
     }
 }

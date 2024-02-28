@@ -1,4 +1,29 @@
 <script type="application/javascript">
+
+    var deviceType = 'v2';
+
+    function getDeviceModel() {
+        var button = document.getElementById('submit-button');
+        button.classList.add('is-loading');
+
+        Homey.emit('get_device_model').then(function (result) {
+            console.log(result);
+            button.classList.remove('is-loading');
+
+            deviceType = result;
+
+            if (result === 'v1') {
+                document.getElementById('user-group').style.display = 'none';
+                document.getElementById('password-group').style.display = 'none';
+            } else if (result === 'v2') {
+                document.getElementById('user-group').style.display = 'block';
+                document.getElementById('password-group').style.display = 'block';
+            } else {
+                Homey.alert('Unknown device model');
+            }
+        });
+    }
+
     function submitForm() {
 
         var button = document.getElementById('submit-button');
@@ -8,11 +33,15 @@
         var username = document.getElementById('username').value;
         var password = document.getElementById('password').value;
 
-        var data = {
+        var data = deviceType === 'v1' ? {
+            host: host,
+        } : {
             username: username,
             password: password,
             host: host,
         };
+
+        console.log('sending data', data);
 
         Homey.emit("form_complete", data).then(function (result) {
             button.classList.remove('is-loading');
@@ -24,6 +53,11 @@
             }
         });
     }
+
+    window.onload = function () {
+        document.getElementById("host").focus();
+    };
+
 </script>
 
 <style>
@@ -51,14 +85,14 @@
                 <span data-i18n="login.gateway_description"></span>
             </div>
         </div>
-        <div class="homey-form-group">
+        <div class="homey-form-group" id="user-group" style="display: none">
             <label class="homey-form-label" for="username" data-i18n="login.username"></label>
-            <input class="homey-form-input" id="username" type="text" value="" />
+            <input class="homey-form-input" id="username" type="text" value="admin" />
             <div class="device-description">
                 <span data-i18n="login.username_description"></span>
             </div>
         </div>
-        <div class="homey-form-group">
+        <div class="homey-form-group" id="password-group" style="display: none">
             <label class="homey-form-label" for="password" data-i18n="login.password"></label>
             <input class="homey-form-input" id="password" type="password" value="" />
             <div class="device-description">
@@ -71,3 +105,7 @@
         data-i18n="login.submit">
     </button>
 </form>
+
+<script>
+    getDeviceModel();
+</script>
