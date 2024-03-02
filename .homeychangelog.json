@@ -52,5 +52,8 @@
   },
   "1.4.0": {
     "en": "Updated pairing process, includes support for Intergas Gateway v1."
+  },
+  "1.4.1": {
+    "en": "Better pairing process, metadata update, fix relative temperature setting"
   }
 }
