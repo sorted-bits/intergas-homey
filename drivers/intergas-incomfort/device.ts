@@ -144,6 +144,8 @@ class IntergasIncomfort extends Homey.Device {
     await addCapabilityIfNotExists(this, 'is_pumping');
     await addCapabilityIfNotExists(this, 'alarm_generic');
 
+    await this.setClass('thermostat');
+
     this.registerCapabilityListener('target_temperature', async (value) => {
       this.log('Changing room target temperature to', value);
       this._isSettingRoomTemp = true;
